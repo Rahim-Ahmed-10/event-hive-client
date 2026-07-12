@@ -27,17 +27,19 @@ const dummyEvents = [
     image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=600",
     badge: "Trending"
   },
-  {
-    id: 3,
-    title: "National Football Championship Final",
-    category: "Sports",
-    date: "August 12, 2026",
-    time: "04:00 PM",
-    location: "Army Stadium, Dhaka",
-    price: "$10",
-    image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&q=80&w=600",
-    badge: "Popular"
-  }
+ {
+    "id": 3,
+    "title": "National Football Championship Final",
+    "category": "Sports",
+    "date": "2026-08-12",
+    "time": "04:00 PM",
+    "location": "Army Stadium, Dhaka",
+    "price": 10,
+    "image": "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&q=80&w=600",
+    "badge": "Popular",
+    "description": "Witness the ultimate showdown for the national football crown. An intense battle of passion, skills, and teamwork.",
+    "ticketsAvailable": 350
+  },
 ];
 
 export default function FeaturedEvents() {
