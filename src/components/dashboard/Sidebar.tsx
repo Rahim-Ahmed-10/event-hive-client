@@ -11,22 +11,40 @@ import {
   LogOut, 
   X 
 } from "lucide-react";
+// Better-Auth ক্লায়েন্ট ইমপোর্ট
+import { authClient } from "@/lib/auth-client";
 
 interface SidebarProps {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
 }
 
+// 👑 ১. শুধুমাত্র অ্যাডমিনদের জন্য মেনু আইটেম
+const adminMenuItems = [
+  { name: "Overview", href: "/dashboard/admin", icon: LayoutDashboard },
+  { name: "Create Event", href: "/dashboard/create-event", icon: CalendarPlus },
+  { name: "Manage Events", href: "/dashboard/manage-events", icon: CalendarDays },
+  { name: "All Users", href: "/dashboard/users", icon: Users }, 
+  { name: "Settings", href: "/dashboard/settings", icon: Settings },
+];
+
+// 👤 ২. সাধারণ ইউজার বা ডাক্তারদের জন্য মেনু আইটেম (প্রয়োজন অনুযায়ী পাথ চেঞ্জ করতে পারেন)
+const userMenuItems = [
+  { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Create Event", href: "/dashboard/create-event", icon: CalendarPlus },
+  { name: "Manage Events", href: "/dashboard/manage-events", icon: CalendarDays },
+  { name: "Settings", href: "/dashboard/settings", icon: Settings },
+];
+
 export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
   const pathname = usePathname();
 
-  const menuItems = [
-    { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Create Event", href: "/dashboard/create-event", icon: CalendarPlus },
-    { name: "Manage Events", href: "/dashboard/manage-events", icon: CalendarDays },
-    { name: "All Users", href: "/dashboard/users", icon: Users },
-    { name: "Settings", href: "/dashboard/settings", icon: Settings },
-  ];
+  // লগইন করা ইউজারের সেশন ডাটা নিয়ে আসা
+  const { data: session } = authClient.useSession();
+  const user = session?.user;
+
+  // 🎯 কন্ডিশন অনুযায়ী সঠিক মেনুটি সিলেক্ট করা
+  const menuItems = user?.role === "admin" ? adminMenuItems : userMenuItems;
 
   return (
     <>
@@ -36,12 +54,23 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
         }`}
       >
         <div className="space-y-8">
-          {/* Logo / Brand */}
+          {/* ✨ লোগো সেকশন পরিবর্তন: রোল অনুযায়ী dynamic টেক্সট */}
           <div className="flex items-center justify-between">
             <Link href="/" className="inline-block">
-              <h3 className="font-black text-2xl tracking-tighter text-white">
-                Event<span className="text-orange-500">Hive</span>
-              </h3>
+              <div className="flex flex-col">
+                <span className="text-xs font-bold uppercase tracking-widest text-gray-500">
+                  EventHive
+                </span>
+                <h3 className="font-black text-xl tracking-tight text-white mt-0.5">
+                  {user?.role === "admin" ? (
+                    <>Admin <span className="text-orange-500">Panel</span></>
+                  ) : user?.role === "doctor" ? (
+                    <>Doctor <span className="text-blue-500">Center</span></>
+                  ) : (
+                    <>User <span className="text-orange-500">Dashboard</span></>
+                  )}
+                </h3>
+              </div>
             </Link>
             {/* Mobile Close Button */}
             <button 
@@ -52,7 +81,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
             </button>
           </div>
 
-          {/* Navigation Links */}
+          {/* 🌟 ডাইনামিক নেভিগেশন লিংকসমূহ */}
           <nav className="space-y-1.5">
             {menuItems.map((item) => {
               const Icon = item.icon;

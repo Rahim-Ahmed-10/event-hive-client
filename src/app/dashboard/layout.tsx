@@ -19,9 +19,6 @@ export default function DashboardLayout({
 
       {/* ডানপাশের মেইন কন্টেন্ট এরিয়া */}
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
-        
-        {/* আলাদা করা টপ নেভবার (Header) */}
-        <Header isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
 
         {/* ডাইনামিক পেজ রেন্ডার এরিয়া */}
         <main className="flex-1 p-6 max-w-7xl w-full mx-auto">

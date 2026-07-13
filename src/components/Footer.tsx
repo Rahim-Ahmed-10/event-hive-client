@@ -3,8 +3,15 @@ import React from "react";
 import Link from "next/link";
 // Lucide React এর সঠিক আইকন নামগুলো এখানে ইম্পোর্ট করা হয়েছে
 import { Mail, Phone, MapPin, Send } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 export default function Footer() {
+
+  const pathName = usePathname()
+  if(pathName.includes("dashboard")){
+    return null;
+  }
+
   const currentYear = new Date().getFullYear();
 
   return (

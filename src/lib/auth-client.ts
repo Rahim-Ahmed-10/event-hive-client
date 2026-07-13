@@ -5,3 +5,9 @@ export const authClient = createAuthClient({
 });
 
 export const { signIn, signUp, useSession } = createAuthClient()
+// TypeScript কে 'role' প্রোপার্টির কথা জানিয়ে দেওয়া
+declare module "better-auth/react" {
+    interface User {
+        role?: "admin" | "doctor" | "user"; 
+    }
+}
