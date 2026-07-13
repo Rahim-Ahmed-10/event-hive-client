@@ -1,54 +1,42 @@
-"use client";
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { Calendar, MapPin, ArrowRight, Tag } from "lucide-react";
 
-// ডামি ইভেন্ট ডাটা
-const dummyEvents = [
-  {
-    id: 1,
-    title: "Echoes of Rock Concert 2026",
-    category: "Music",
-    date: "July 28, 2026",
-    time: "07:00 PM",
-    location: "International Convention City, Dhaka",
-    price: "$25",
-    image: "https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&q=80&w=600",
-    badge: "Selling Fast"
-  },
-  {
-    id: 2,
-    title: "NextGen Tech Conference & Expo",
-    category: "Tech",
-    date: "August 05, 2026",
-    time: "10:00 AM",
-    location: "Bangabandhu International Conference Center",
-    price: "Free",
-    image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=600",
-    badge: "Trending"
-  },
- {
-    "id": 3,
-    "title": "National Football Championship Final",
-    "category": "Sports",
-    "date": "2026-08-12",
-    "time": "04:00 PM",
-    "location": "Army Stadium, Dhaka",
-    "price": 10,
-    "image": "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&q=80&w=600",
-    "badge": "Popular",
-    "description": "Witness the ultimate showdown for the national football crown. An intense battle of passion, skills, and teamwork.",
-    "ticketsAvailable": 350
-  },
-];
+// ১. ডাটার জন্য টাইপস্ক্রিপ্ট ইন্টারফেস ডিক্লেয়ারেশন
+interface EventItem {
+  _id: string; // ডাটাবেজের আইডি সাধারণত _id হয়
+  id?: string | number;
+  title: string;
+  category: string;
+  date: string;
+  time: string;
+  location: string;
+  price: string | number;
+  image: string;
+  badge?: string;
+}
 
-export default function FeaturedEvents() {
-  const [activeTab, setActiveTab] = useState("All");
-  const categories = ["All", "Music", "Tech", "Sports"];
+// ২. সার্ভার থেকে ডাটা ফেচ করার ফাংশন
+async function getFeaturedEvents(): Promise<EventItem[]> {
+  // আপনার এক্সপ্রেস ব্যাকএন্ডের সঠিক URL দিন
+  const res = await fetch("http://localhost:8085/events", {
+    cache: "no-store", // প্রতিবার লাইভ ডাটা পাওয়ার জন্য
+  });
 
-  const filteredEvents = activeTab === "All" 
-    ? dummyEvents 
-    : dummyEvents.filter(event => event.category === activeTab);
+  if (!res.ok) {
+    throw new Error("Failed to fetch featured events");
+  }
+
+  return res.json();
+}
+
+// ৩. মেইন কম্পোনেন্ট (Async Server Component)
+export default async function FeaturedEvents() {
+  // সার্ভার থেকে ডাটা নিয়ে আসা
+  const allEvents = await getFeaturedEvents();
+
+  // 🎯 শুধুমাত্র প্রথম ৩টি কার্ড বা ইভেন্ট সিলেক্ট করা হলো
+  const featuredEvents = allEvents.slice(0, 3);
 
   return (
     <div className="bg-[#0f172a] text-gray-300 py-20 border-t border-white/5 relative z-10">
@@ -64,46 +52,31 @@ export default function FeaturedEvents() {
               Featured <span className="text-orange-500">Events</span> Near You
             </h2>
           </div>
-
-          {/* Category Tabs */}
-          <div className="flex flex-wrap gap-2 bg-[#0b1120] p-1.5 rounded-xl border border-white/5">
-            {categories.map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-5 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all cursor-pointer ${
-                  activeTab === tab
-                    ? "bg-orange-600 text-white shadow-lg"
-                    : "text-gray-400 hover:text-white hover:bg-white/5"
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
         </div>
 
-        {/* Events Grid Layout */}
+        {/* Events Grid Layout (সর্বোচ্চ ৩টি দেখাবে) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredEvents.map((event) => (
+          {featuredEvents.map((event) => (
             <div 
-              key={event.id}
+              key={event._id || event.id}
               className="group bg-[#0b1120] border border-white/5 rounded-3xl overflow-hidden shadow-xl hover:border-orange-500/30 transition-all duration-300 flex flex-col h-full"
             >
               {/* Image Box */}
               <div className="relative w-full aspect-[16/10] overflow-hidden bg-slate-800">
                 <img 
-                  src={event.image} 
+                  src={event.image || "https://images.unsplash.com/photo-1540575467063-178a50c2df87"} 
                   alt={event.title} 
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
-                {/* Floating Badge */}
-                <span className="absolute top-4 left-4 bg-orange-600 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md shadow-md">
-                  {event.badge}
-                </span>
+                {/* Floating Badge (যদি ডাটাবেজে থাকে) */}
+                {event.badge && (
+                  <span className="absolute top-4 left-4 bg-orange-600 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md shadow-md">
+                    {event.badge}
+                  </span>
+                )}
                 {/* Floating Price */}
                 <span className="absolute bottom-4 right-4 bg-[#0f172a]/90 backdrop-blur-md border border-white/10 text-orange-400 text-xs font-black px-3 py-1.5 rounded-xl">
-                  {event.price}
+                  {typeof event.price === "number" ? `$${event.price}` : event.price}
                 </span>
               </div>
 
@@ -136,7 +109,7 @@ export default function FeaturedEvents() {
 
                 {/* Action Button */}
                 <Link 
-                  href={`/events/${event.id}`}
+                  href={`/events/${event._id || event.id}`}
                   className="w-full inline-flex items-center justify-center gap-2 py-3 text-xs font-bold text-white bg-white/5 group-hover:bg-orange-600 rounded-2xl border border-white/10 group-hover:border-transparent transition-all duration-300 cursor-pointer"
                 >
                   <span>Get Tickets</span>
@@ -147,6 +120,11 @@ export default function FeaturedEvents() {
             </div>
           ))}
         </div>
+
+        {/* যদি কোনো ডাটা না থাকে */}
+        {featuredEvents.length === 0 && (
+          <p className="text-center text-gray-500 mt-8">No featured events found.</p>
+        )}
 
         {/* Bottom Call to Action */}
         <div className="text-center mt-16">

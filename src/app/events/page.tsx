@@ -1,11 +1,12 @@
+import EventAllPage from '@/components/EventsAll';
 import React from 'react';
 
-const EventAllPage = () => {
+const AllEventsPage = () => {
     return (
         <div>
-            <h3>All Events</h3>
+            <EventAllPage />
         </div>
     );
 };
 
-export default EventAllPage;
+export default AllEventsPage;

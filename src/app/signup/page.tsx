@@ -1,22 +1,84 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
-import { User, Mail, Lock, ArrowRight, Eye, EyeOff, ShieldCheck, UserCheck } from "lucide-react";
+import { useRouter } from "next/navigation"; 
+import { User, Mail, Lock, ArrowRight, Eye, EyeOff, ShieldCheck, UserCheck, Link2, X, Loader2 } from "lucide-react";
+// আপনার প্রজেক্টের সঠিক পাথ অনুযায়ী authClient ইমপোর্ট নিশ্চিত করুন
+import { authClient } from "@/lib/auth-client"; 
 
 export default function SignUp() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false); 
+  const [error, setError] = useState<string | null>(null); 
+  const [success, setSuccess] = useState<string | null>(null); 
+  
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    imageUrl: "", 
     password: "",
-    role: "user", // ডিফল্ট রোল 'user' রাখা হয়েছে
+    role: "user", // ডিফল্টভাবে "user" থাকবে
     agreeTerms: false,
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value;
+    setFormData({ ...formData, imageUrl: url });
+    setImagePreview(url || null); 
+  };
+
+  const handleRemoveImage = () => {
+    setFormData({ ...formData, imageUrl: "" });
+    setImagePreview(null);
+  };
+
+  // 📝 সাবমিট হ্যান্ডলার
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // পরবর্তীতে এখানে আপনার ব্যাকএন্ড এপিআই কানেক্ট করবেন
-    console.log("Sign Up Data with Role:", formData);
+    setLoading(true);
+    setError(null);
+    setSuccess(null); 
+
+    // বেসিক ফিল্ড ভ্যালিডেশন
+    if (!formData.name || !formData.email || !formData.password) {
+      setError("Please fill name, email, and password.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // 🎯 Better-Auth ক্লায়েন্ট ব্যবহার করে সাইন আপ
+      const { data, error: authError } = await authClient.signUp.email({
+        email: formData.email,
+        password: formData.password,
+        name: formData.name,
+        image: formData.imageUrl || "https://encrypted-tbn0.gstatic.com/images", 
+        
+        // ✨ ফিক্স: কাস্টম ফিল্ডগুলো সরাসরি রুট অবজেক্টের প্রোপার্টি হিসেবে পাস করা হলো
+        role: formData.role, // বাটন থেকে সিলেক্ট করা "user" বা "admin" ডাইরেক্ট যাবে
+        plan: "free"
+      });
+
+      if (authError) {
+        setError(authError.message || "Something went wrong.");
+        setLoading(false);
+        return;
+      }
+
+      // সফল হলে সাকসেস মেসেজ দেখাবে
+      setSuccess(`Account created successfully as ${formData.role}! 🎉`);
+      
+      setTimeout(() => {
+        router.push("/signin"); 
+      }, 1500);
+
+    } catch (err) {
+      setError("Failed to register. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -43,6 +105,20 @@ export default function SignUp() {
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
           
+          {/* ❌ এরর মেসেজ */}
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs p-3.5 rounded-2xl text-center">
+              {error}
+            </div>
+          )}
+
+          {/* ⚡ সাকসেস মেসেজ */}
+          {success && (
+            <div className="bg-green-500/10 border border-green-500/20 text-green-400 text-xs p-3.5 rounded-2xl text-center">
+              {success}
+            </div>
+          )}
+
           {/* Full Name Field */}
           <div className="space-y-2">
             <label className="text-xs font-semibold uppercase tracking-wider text-gray-400">
@@ -79,13 +155,51 @@ export default function SignUp() {
             </div>
           </div>
 
-          {/* Role Selection Field (User / Admin) */}
+          {/* Profile Image URL Field */}
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <label className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+                Profile Image URL
+              </label>
+              {imagePreview && (
+                <div className="relative w-7 h-7 rounded-full bg-[#0f172a] border border-white/10 overflow-hidden group">
+                  <img 
+                    src={imagePreview} 
+                    alt="Preview" 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = "";
+                      handleRemoveImage();
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
+                  >
+                    <X className="w-3 h-3 text-red-500" />
+                  </button>
+                </div>
+              )}
+            </div>
+            <div className="relative flex items-center">
+              <Link2 className="absolute left-4 w-4 h-4 text-gray-500" />
+              <input
+                type="url"
+                placeholder="https://example.com/your-photo.jpg"
+                value={formData.imageUrl}
+                onChange={handleUrlChange}
+                className="w-full bg-[#0f172a] border border-white/5 focus:border-orange-500/50 rounded-2xl py-3.5 pl-12 pr-4 text-sm text-white placeholder-gray-600 outline-hidden transition-all duration-300"
+              />
+            </div>
+          </div>
+
+          {/* Role Selection Field */}
           <div className="space-y-2">
             <label className="text-xs font-semibold uppercase tracking-wider text-gray-400">
               Select Your Role
             </label>
             <div className="grid grid-cols-2 gap-4">
-              {/* User Option */}
               <button
                 type="button"
                 onClick={() => setFormData({ ...formData, role: "user" })}
@@ -99,7 +213,6 @@ export default function SignUp() {
                 <span>User</span>
               </button>
 
-              {/* Admin Option */}
               <button
                 type="button"
                 onClick={() => setFormData({ ...formData, role: "admin" })}
@@ -165,10 +278,20 @@ export default function SignUp() {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full inline-flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-500 text-white py-3.5 rounded-2xl font-bold text-sm shadow-lg shadow-orange-950/20 transition-all duration-300 cursor-pointer mt-2"
+            disabled={loading}
+            className="w-full inline-flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-500 disabled:bg-orange-800 disabled:cursor-not-allowed text-white py-3.5 rounded-2xl font-bold text-sm shadow-lg shadow-orange-950/20 transition-all duration-300 transform active:scale-95 cursor-pointer mt-2"
           >
-            <span>Sign Up</span>
-            <ArrowRight className="w-4 h-4" />
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Creating Account...</span>
+              </>
+            ) : (
+              <>
+                <span>Sign Up</span>
+                <ArrowRight className="w-4 h-4" />
+              </>
+            )}
           </button>
         </form>
 
