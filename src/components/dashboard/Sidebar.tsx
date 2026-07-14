@@ -6,10 +6,14 @@ import {
   LayoutDashboard, 
   CalendarPlus, 
   CalendarDays, 
+  CalendarCog, // 📅 ইভেন্ট আপডেট বা এডিট করার আইকন
   Users, 
   Settings, 
   LogOut, 
-  X 
+  X,
+  Ticket,
+  User,    
+  UserCog  
 } from "lucide-react";
 // Better-Auth ক্লায়েন্ট ইমপোর্ট
 import { authClient } from "@/lib/auth-client";
@@ -19,21 +23,21 @@ interface SidebarProps {
   setIsOpen: (isOpen: boolean) => void;
 }
 
-// 👑 ১. শুধুমাত্র অ্যাডমিনদের জন্য মেনু আইটেম
+// 👑 ১. অ্যাডমিনদের জন্য মেনু আইটেম (এখানে "Update Event" যুক্ত করা হয়েছে)
 const adminMenuItems = [
   { name: "Overview", href: "/dashboard/admin", icon: LayoutDashboard },
-  { name: "Create Event", href: "/dashboard/create-event", icon: CalendarPlus },
-  { name: "Manage Events", href: "/dashboard/manage-events", icon: CalendarDays },
-  { name: "All Users", href: "/dashboard/users", icon: Users }, 
-  { name: "Settings", href: "/dashboard/settings", icon: Settings },
+  { name: "Create Event", href: "/dashboard/admin/create-event", icon: CalendarPlus },
+  { name: "Manage Events", href: "/dashboard/admin/manage-events", icon: CalendarDays },
+  { name: "Update Event", href: "/dashboard/admin/update-event", icon: CalendarCog }, // নতুন অপশন
+  { name: "All Users", href: "/dashboard/admin/users", icon: Users }, 
+  { name: "Settings", href: "/dashboard/admin/settings", icon: Settings },
 ];
 
-// 👤 ২. সাধারণ ইউজার বা ডাক্তারদের জন্য মেনু আইটেম (প্রয়োজন অনুযায়ী পাথ চেঞ্জ করতে পারেন)
+// 👤 ২. সাধারণ ইউজারদের জন্য মেনু আইটেম
 const userMenuItems = [
-  { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Create Event", href: "/dashboard/create-event", icon: CalendarPlus },
-  { name: "Manage Events", href: "/dashboard/manage-events", icon: CalendarDays },
-  { name: "Settings", href: "/dashboard/settings", icon: Settings },
+  { name: "Overview", href: "/dashboard/user", icon: LayoutDashboard },
+  { name: "My Bookings", href: "/dashboard/user/bookings", icon: Ticket },
+  { name: "Profile", href: "/dashboard/user/profile", icon: User },  
 ];
 
 export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
@@ -43,7 +47,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
   const { data: session } = authClient.useSession();
   const user = session?.user;
 
-  // 🎯 কন্ডিশন অনুযায়ী সঠিক মেনুটি সিলেক্ট করা
+  // 🎯 ইউজার রোল অনুযায়ী সঠিক মেনুটি সিলেক্ট করা
   const menuItems = user?.role === "admin" ? adminMenuItems : userMenuItems;
 
   return (
@@ -54,7 +58,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
         }`}
       >
         <div className="space-y-8">
-          {/* ✨ লোগো সেকশন পরিবর্তন: রোল অনুযায়ী dynamic টেক্সট */}
+          {/* ✨ লোগো সেকশন: রোল অনুযায়ী dynamic টেক্সট */}
           <div className="flex items-center justify-between">
             <Link href="/" className="inline-block">
               <div className="flex flex-col">
@@ -64,8 +68,6 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                 <h3 className="font-black text-xl tracking-tight text-white mt-0.5">
                   {user?.role === "admin" ? (
                     <>Admin <span className="text-orange-500">Panel</span></>
-                  ) : user?.role === "doctor" ? (
-                    <>Doctor <span className="text-blue-500">Center</span></>
                   ) : (
                     <>User <span className="text-orange-500">Dashboard</span></>
                   )}

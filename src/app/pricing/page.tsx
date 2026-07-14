@@ -99,12 +99,14 @@ export default function PricingSection() {
               </li>
             </ul>
           </div>
-          <Link
-            href={getUpgradeLink("admin")}
+         <form action="/api/subscription" method="POST">
+           <button
+           type="submit"
             className="mt-8 block w-full bg-orange-600 hover:bg-orange-500 text-white text-center font-bold text-xs uppercase tracking-wider py-3.5 rounded-xl shadow-lg shadow-orange-950/50 transition-all"
           >
             Upgrade to Pro / Admin
-          </Link>
+          </button>
+         </form>
         </div>
 
         {/* Tier 3: Verified Doctor / Specialist */}

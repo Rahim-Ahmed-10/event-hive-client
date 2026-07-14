@@ -1,5 +1,6 @@
 import React from 'react';
-import { FaCalendarAlt, FaMapMarkerAlt, FaTag, FaTicketAlt, FaClock } from 'react-icons/fa';
+import { FaCalendarAlt, FaMapMarkerAlt, FaTag, FaClock } from 'react-icons/fa';
+import BookingSection from '@/components/BookingSection'; // 👈 নতুন কম্পোনেন্টটি ইম্পোর্ট করুন
 
 interface EventItem {
     _id: string;
@@ -35,14 +36,17 @@ export default async function EventDetailsPage({ params }: PageProps) {
     const resolvedParams = await params;
     const event = await getSingleEvent(resolvedParams.id);
 
-    // প্রাইস ভ্যালু চেক করে সুন্দর ফরম্যাট দেওয়া
-    const isFree = !event.price || event.price.toLowerCase() === 'free' || event.price === '0';
+    const isFree = 
+      !event.price || 
+      String(event.price).toLowerCase() === 'free' || 
+      event.price === 0 || 
+      event.price === '0';
 
     return (
         <div className="bg-[#0b1329] min-h-screen text-slate-100 py-10 px-4 sm:px-6 lg:px-8 font-sans selection:bg-orange-500 selection:text-white">
             <div className="max-w-4xl mx-auto bg-[#111a36]/70 backdrop-blur-md rounded-3xl overflow-hidden border border-slate-800/80 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
                 
-                {/* 📸 প্রিমিয়াম ব্যানার সেকশন */}
+                {/* 📸 প্রিমিয়াম ব্যানার সেকশন */}
                 <div className="relative h-64 sm:h-80 md:h-[400px] w-full group overflow-hidden bg-slate-900">
                     {event.image ? (
                         <img 
@@ -56,7 +60,6 @@ export default async function EventDetailsPage({ params }: PageProps) {
                         </div>
                     )}
                     
-                    {/* গ্রেডিয়েন্ট ওভারলে (ছবির ওপর টেক্সট যেন সহজে পড়া যায়) */}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#111a36] via-transparent to-black/40" />
 
                     {/* ক্যাটাগরি ব্যাজ */}
@@ -89,9 +92,8 @@ export default async function EventDetailsPage({ params }: PageProps) {
                         </h1>
                     </div>
 
-                    {/* 🕒 কী-ইনফরমেশন গ্রিড (ইউজার ফ্রেন্ডলি কার্ডস) */}
+                    {/* 🕒 কী-ইনফরমেশন গ্রিড */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {/* তারিখ কার্ড */}
                         <div className="flex items-center gap-4 bg-[#0b1329]/60 p-4 rounded-2xl border border-slate-800/60 transition-all hover:border-slate-700">
                             <div className="p-3 bg-orange-600/10 rounded-xl border border-orange-500/20 text-orange-500">
                                 <FaCalendarAlt size={18} />
@@ -102,7 +104,6 @@ export default async function EventDetailsPage({ params }: PageProps) {
                             </div>
                         </div>
 
-                        {/* সময় কার্ড */}
                         <div className="flex items-center gap-4 bg-[#0b1329]/60 p-4 rounded-2xl border border-slate-800/60 transition-all hover:border-slate-700">
                             <div className="p-3 bg-orange-600/10 rounded-xl border border-orange-500/20 text-orange-500">
                                 <FaClock size={18} />
@@ -113,7 +114,6 @@ export default async function EventDetailsPage({ params }: PageProps) {
                             </div>
                         </div>
 
-                        {/* স্থান কার্ড */}
                         <div className="flex items-center gap-4 bg-[#0b1329]/60 p-4 rounded-2xl border border-slate-800/60 transition-all hover:border-slate-700 md:col-span-1">
                             <div className="p-3 bg-orange-600/10 rounded-xl border border-orange-500/20 text-orange-500">
                                 <FaMapMarkerAlt size={18} />
@@ -129,29 +129,18 @@ export default async function EventDetailsPage({ params }: PageProps) {
 
                     <hr className="border-slate-800/60" />
 
-                    {/* 📖 ডেসক্রিপশন বা ইভেন্ট সামারি */}
+                    {/* 📖 ডেসক্রিপশন */}
                     <div className="space-y-3">
                         <h3 className="text-lg font-bold text-white tracking-wide flex items-center gap-2">
                             <span className="h-4 w-1 bg-orange-500 rounded-full inline-block"></span>
                             Event Description
                         </h3>
                         <p className="text-slate-300 text-sm sm:text-base leading-relaxed font-normal bg-[#0b1329]/30 p-5 rounded-2xl border border-slate-800/40">
-                            {event.description || "Welcome! Get ready for an exceptional event packed with exciting moments, interactive setups, and networking opportunities. Clear up your schedule and join us to ensure you don't miss out on this amazing experience."}
+                            {event.description || "Welcome! Get ready for an exceptional event packed with exciting moments..."}
                         </p>
                     </div>
 
-                    {/* 🎫 কল টু অ্যাকশন অ্যাক্টিভ বাটন */}
-                    <div className="pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#0b1329]/40 p-5 rounded-2xl border border-slate-800/50">
-                        <div>
-                            <p className="text-xs text-slate-400">Need a spot?</p>
-                            <p className="text-sm font-medium text-slate-200 mt-0.5">Click below to start booking process instantly.</p>
-                        </div>
-                        
-                        <button className="w-full sm:w-auto bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold py-4 px-8 rounded-xl flex items-center justify-center gap-3 transition-all duration-300 transform active:scale-95 shadow-[0_4px_20px_rgba(234,88,12,0.3)] hover:shadow-[0_4px_25px_rgba(234,88,12,0.5)] cursor-pointer text-sm">
-                            <FaTicketAlt className="text-base" />
-                            <span>Book & Secure Seat</span>
-                        </button>
-                    </div>
+                    <BookingSection event={event} />
 
                 </div>
             </div>
