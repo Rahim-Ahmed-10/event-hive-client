@@ -11,7 +11,7 @@ import {
   LayoutDashboard, 
   LogOut 
 } from "lucide-react";
-// Better-Auth ক্লায়েন্ট ইমপোর্ট (আপনার সঠিক পাথ নিশ্চিত করুন)
+// Better-Auth ক্লায়েন্ট ইম্পোর্ট (আপনার সঠিক পাথ নিশ্চিত করুন)
 import { authClient } from "@/lib/auth-client"; 
 
 export default function Navbar() {
@@ -24,7 +24,7 @@ export default function Navbar() {
   const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
 
-  // 🎯 ইউজারের রোল অনুযায়ী ডাইনামিক ড্যাশবোর্ড লিঙ্ক তৈরি করার ফাংশন
+  // 🎯 ইউজারের রোল অনুযায়ী ডাইনামিক ড্যাশবোর্ড লিঙ্ক তৈরি করার ফাংশন
   const getDashboardLink = () => {
     if (user?.role === "admin") return "/dashboard/admin";
     if (user?.role === "user") return "/dashboard/user";
@@ -74,12 +74,13 @@ export default function Navbar() {
           <li>
             <Link href="/events" className="hover:text-orange-500 transition-colors">Events</Link>
           </li>
+          {/* 🎯 এখানে Early Bird Pass পরিবর্তন করে Pricing করা হয়েছে */}
           <li>
-            <Link href="/sale" className="text-orange-500 hover:text-orange-400 transition-colors flex items-center gap-1">
-              Early Bird Pass <span className="text-[10px] bg-red-600 text-white px-1 rounded animate-pulse">HOT</span>
+            <Link href="/pricing" className="text-orange-500 hover:text-orange-400 transition-colors flex items-center gap-1">
+              Pricing <span className="text-[10px] bg-red-600 text-white px-1 rounded animate-pulse">HOT</span>
             </Link>
           </li>
-          {/* 🔒 ইউজার লগইন থাকলে রোল অনুযায়ী ডাইনামিক ড্যাশবোর্ড লিঙ্ক */}
+          {/* 🔒 ইউজার লগইন থাকলে রোল অনুযায়ী ডাইনামিক ড্যাশবোর্ড লিঙ্ক */}
           {user && (
             <li>
               <Link href={getDashboardLink()} className="hover:text-orange-500 transition-colors">
@@ -151,7 +152,7 @@ export default function Navbar() {
                       <User className="w-4 h-4 text-gray-500 group-hover:text-orange-500 transition-colors" />
                       My Profile
                     </Link>
-                    {/* 🌟 রোল অনুযায়ী ড্রপডাউনের ড্যাশবোর্ড লিঙ্ক */}
+                    {/* 🌟 রোল অনুযায়ী ড্রপডাউনের ড্যাশবোর্ড লিঙ্ক */}
                     <Link 
                       href={getDashboardLink()} 
                       onClick={() => setIsProfileOpen(false)}
@@ -231,14 +232,15 @@ export default function Navbar() {
               <li>
                 <Link href="/events" onClick={() => setIsOpen(false)} className="hover:text-orange-500 block">Events</Link>
               </li>
-              {/* 🔒 রোল অনুযায়ী মোবাইলের ড্যাশবোর্ড লিঙ্ক */}
+              {/* 🔒 রোল অনুযায়ী মোবাইলের ড্যাশবোর্ড লিঙ্ক */}
               {user && (
                 <li>
                   <Link href={getDashboardLink()} onClick={() => setIsOpen(false)} className="text-orange-500 block">Dashboard</Link>
                 </li>
               )}
+              {/* 🎯 মোবাইল মেনুতেও Pricing করা হয়েছে */}
               <li>
-                <Link href="/sale" onClick={() => setIsOpen(false)} className="text-orange-500 block">Early Bird Pass</Link>
+                <Link href="/#pricing" onClick={() => setIsOpen(false)} className="text-orange-500 block">Pricing</Link>
               </li>
               
               <hr className="border-white/5 my-2" />
