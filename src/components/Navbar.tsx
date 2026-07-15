@@ -11,7 +11,7 @@ import {
   LayoutDashboard, 
   LogOut 
 } from "lucide-react";
-// Better-Auth ক্লায়েন্ট ইম্পোর্ট (আপনার সঠিক পাথ নিশ্চিত করুন)
+// Better-Auth ক্লায়েন্ট ইম্পোর্ট
 import { authClient } from "@/lib/auth-client"; 
 
 export default function Navbar() {
@@ -22,7 +22,9 @@ export default function Navbar() {
 
   // লগইন করা ইউজারের সেশন ডাটা নিয়ে আসা
   const { data: session, isPending } = authClient.useSession();
-  const user = session?.user;
+  
+  // 🛠️ TypeScript Error Fix: user অবজেক্টকে কাস্টম টাইপ বা any হিসেবে অ্যাসাইন করা হয়েছে
+  const user = session?.user as any;
 
   // 🎯 ইউজারের রোল অনুযায়ী ডাইনামিক ড্যাশবোর্ড লিঙ্ক তৈরি করার ফাংশন
   const getDashboardLink = () => {
@@ -74,7 +76,6 @@ export default function Navbar() {
           <li>
             <Link href="/events" className="hover:text-orange-500 transition-colors">Events</Link>
           </li>
-          {/* 🎯 এখানে Early Bird Pass পরিবর্তন করে Pricing করা হয়েছে */}
           <li>
             <Link href="/pricing" className="text-orange-500 hover:text-orange-400 transition-colors flex items-center gap-1">
               Pricing <span className="text-[10px] bg-red-600 text-white px-1 rounded animate-pulse">HOT</span>
@@ -152,7 +153,6 @@ export default function Navbar() {
                       <User className="w-4 h-4 text-gray-500 group-hover:text-orange-500 transition-colors" />
                       My Profile
                     </Link>
-                    {/* 🌟 রোল অনুযায়ী ড্রপডাউনের ড্যাশবোর্ড লিঙ্ক */}
                     <Link 
                       href={getDashboardLink()} 
                       onClick={() => setIsProfileOpen(false)}
@@ -232,13 +232,11 @@ export default function Navbar() {
               <li>
                 <Link href="/events" onClick={() => setIsOpen(false)} className="hover:text-orange-500 block">Events</Link>
               </li>
-              {/* 🔒 রোল অনুযায়ী মোবাইলের ড্যাশবোর্ড লিঙ্ক */}
               {user && (
                 <li>
                   <Link href={getDashboardLink()} onClick={() => setIsOpen(false)} className="text-orange-500 block">Dashboard</Link>
                 </li>
               )}
-              {/* 🎯 মোবাইল মেনুতেও Pricing করা হয়েছে */}
               <li>
                 <Link href="/#pricing" onClick={() => setIsOpen(false)} className="text-orange-500 block">Pricing</Link>
               </li>
