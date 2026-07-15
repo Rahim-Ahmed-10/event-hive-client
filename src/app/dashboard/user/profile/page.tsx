@@ -18,7 +18,7 @@ export default function ProfilePage() {
   const { data: session, isPending: sessionLoading, refetch } = authClient.useSession();
   const currentUser = session?.user;
 
-  // হাইড্রেশন এরর এড়ানোর জন্য মাউন্ট স্টেট
+  // হাইড্রেশন এরর এড়ানোর জন্য মাউন্ট স্টেট
   const [mounted, setMounted] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -49,13 +49,14 @@ export default function ProfilePage() {
       </div>
     );
   }
-const handleUpdate = async (e: React.FormEvent) => {
+
+  const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setUpdating(true);
     setMessage(null);
 
     try {
-      // 🚀 এখান থেকে email সরিয়ে ফেলা হলো, শুধু name এবং image আপডেট হবে
+      // 🚀 এখান থেকে email সরিয়ে ফেলা হলো, শুধু name এবং image আপডেট হবে
       const { data, error } = await authClient.updateUser({
         name: name,
         image: imageUrl,
@@ -71,7 +72,7 @@ const handleUpdate = async (e: React.FormEvent) => {
       setMessage({ type: "success", text: "Profile updated successfully! 🎉" });
       setIsEditing(false);
 
-      // ৩ সেকেন্ড পর সাকসেস মেসেজটি হাওয়া হয়ে যাবে
+      // ৩ সেকেন্ড পর সাকসেস মেসেজটি হাওয়া হয়ে যাবে
       setTimeout(() => {
         setMessage(null);
       }, 3000);
@@ -138,12 +139,17 @@ const handleUpdate = async (e: React.FormEvent) => {
             <div className="text-center sm:text-left space-y-1.5">
               <h2 className="text-2xl font-extrabold text-white">{name || "User Name"}</h2>
               <div className="flex flex-wrap justify-center sm:justify-start gap-2">
+                
+                {/* 🚀 Plan সেকশন (টাইপ বাইপাস সহ) */}
                 <span className="px-3 py-0.5 bg-orange-500/10 text-orange-400 border border-orange-500/10 rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center gap-1">
-                  <Shield size={10} /> {(currentUser as any)?.role ? (currentUser as any).role : "user"}
+                  <Zap size={10} /> {(currentUser as any)?.plan || "free"}
                 </span>
+                
+                {/* 🚀 Role সেকশন (সঠিক ভেরিয়েবল ও টাইপ বাইপাস সহ) */}
                 <span className="px-3 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/10 rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center gap-1">
-                  <Shield size={10} /> {user?.role || "user"}
+                  <Shield size={10} /> {(currentUser as any)?.role || "user"}
                 </span>
+
               </div>
             </div>
           </div>
