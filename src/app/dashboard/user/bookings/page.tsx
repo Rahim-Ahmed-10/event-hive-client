@@ -31,6 +31,7 @@ export default function BookingsPage() {
 
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const backendUrl = process.env.NEXT_PUBLIC_SERVER_URL;
 
   useEffect(() => {
     if (!user?.id) return;
@@ -38,7 +39,7 @@ export default function BookingsPage() {
     const fetchBookings = async () => {
       try {
         // এক্সপ্রেস ব্যাকএন্ডের ডাইনামিক পোর্ট ৮MDg৫ থেকে ডাটা আনা হচ্ছে
-        const response = await fetch(`http://localhost:8085/api/bookings?userId=${user.id}`);
+        const response = await fetch(`${backendUrl}/api/bookings?userId=${user.id}`);
         const data = await response.json();
         setBookings(data);
       } catch (error) {

@@ -19,9 +19,11 @@ interface PageProps {
         id: string;
     }>;
 }
+const backendUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+
 
 async function getSingleEvent(id: string): Promise<EventItem> {
-    const res = await fetch(`http://localhost:8085/events/${id}`, {
+    const res = await fetch(`${backendUrl}/events/${id}`, {
         cache: 'no-store'
     });
 

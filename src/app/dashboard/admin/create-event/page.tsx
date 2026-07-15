@@ -38,7 +38,7 @@ export default function CreateEventPage() {
     setLoading(true);
 
     try {
-      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8085";
+      const BACKEND_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:8085";
 
       // ডাটা টাইপ কনভার্ট করা
       const eventPayload = {

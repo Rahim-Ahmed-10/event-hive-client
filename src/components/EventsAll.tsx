@@ -26,10 +26,12 @@ export default function EventAllPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
+    const backendUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+
     useEffect(() => {
         async function loadEvents() {
             try {
-                const res = await fetch('http://localhost:8085/events', {
+                const res = await fetch(`${backendUrl}/events`, {
                     cache: 'no-store'
                 });
                 if (!res.ok) throw new Error('Failed to fetch events');

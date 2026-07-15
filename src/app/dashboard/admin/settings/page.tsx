@@ -52,7 +52,7 @@ export default function AdminSettingsPage() {
     confirmPassword: ""
   });
 
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8085";
+  const BACKEND_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:8085";
   const loggedInAdminEmail = "admin@example.com"; // এখানে আপনার লগইন করা অ্যাডমিনের ডাইনামিক ইমেইল বসবে
 
   // ১. পেজ লোড হলে অ্যাডমিন প্রোফাইল ও সিস্টেম কনফিগারেশন ডাটা নিয়ে আসা

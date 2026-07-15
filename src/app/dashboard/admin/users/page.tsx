@@ -26,7 +26,7 @@ export default function UsersAdminPage() {
   const [selectedPlan, setSelectedPlan] = useState("All");
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8085";
+  const BACKEND_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:8085";
 
   // ডাটাবেজ থেকে সব ইউজার লোড করা
   const fetchUsers = async () => {

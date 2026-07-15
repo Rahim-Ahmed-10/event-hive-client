@@ -30,6 +30,8 @@ export default function UserOverview() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const backendUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+
   // ডাটাবেজ থেকে ইউজারের বুকিং ডাটা ফেচ করা
   useEffect(() => {
     if (!user?.id) return;
@@ -37,7 +39,7 @@ export default function UserOverview() {
     const fetchBookings = async () => {
       try {
         // আপনার এপিআই রুট অনুযায়ী ইউআরএল পরিবর্তন করে নিবেন (যেমন: `/api/user/bookings?userId=${user.id}`)
-        const response = await fetch(`http://localhost:8085/api/bookings?userId=${user.id}`);
+        const response = await fetch(`${backendUrl}/api/bookings?userId=${user.id}`);
         const data = await response.json();
         setBookings(data);
       } catch (error) {

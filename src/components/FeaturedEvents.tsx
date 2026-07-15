@@ -16,10 +16,12 @@ interface EventItem {
   badge?: string;
 }
 
+const backendUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+
 // ২. সার্ভার থেকে ডাটা ফেচ করার ফাংশন
 async function getFeaturedEvents(): Promise<EventItem[]> {
   // আপনার এক্সপ্রেস ব্যাকএন্ডের সঠিক URL দিন
-  const res = await fetch("http://localhost:8085/events", {
+  const res = await fetch(`${backendUrl}/events`, {
     cache: "no-store", // প্রতিবার লাইভ ডাটা পাওয়ার জন্য
   });
 
