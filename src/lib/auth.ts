@@ -45,6 +45,7 @@ export const auth = betterAuth({
   // 🛡️ ট্রাস্টেড অরিজিনস (রুট লেভেলে রাখা হয়েছে টাইপ এরর দূর করতে)
   trustedOrigins: [
     "http://localhost:3000",
+    "http://127.0.0.1:3000", // অনেক সময় লোকালহোস্ট আইপি দিয়ে রান হয়
     "https://event-hive-client-self.vercel.app"
   ],
 
