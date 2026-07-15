@@ -5,7 +5,7 @@ import type { NextRequest } from 'next/server'
 import { auth } from './lib/auth'
 
 // 🛠️ ১. ফাংশনের নাম পরিবর্তন করে 'middleware' করা হলো
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
     
     // 🛠️ ২. next/headers এর বদলে সরাসরি request.headers ব্যবহার করা হলো
     const session = await auth.api.getSession({
