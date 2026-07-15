@@ -33,7 +33,6 @@ export const config = {
   matcher: [
     '/profile', 
     '/dashboard/user', 
-    '/events/:id*',   // ইভেন্ট ডিটেইলস পেজ প্রোটেক্ট করার জন্য
-    '/details/:id*'   // অল্টারনেটিভ ডিটেইলস পেজ প্রোটেক্ট করার জন্য
+    '/events/:path*',
   ],
 }

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FaCalendarAlt, FaMapMarkerAlt, FaTag, FaSearch } from 'react-icons/fa';
-import { LayoutGrid, List, Sparkles } from 'lucide-react';
+import { LayoutGrid, List, Sparkles, Loader2 } from 'lucide-react';
 
 interface EventItem {
     _id: string;
@@ -13,7 +13,7 @@ interface EventItem {
     time?: string;
     location?: string;
     image?: string;
-    price?: string;
+    price?: string | number;
     isFeatured?: boolean;
 }
 
@@ -26,8 +26,7 @@ export default function EventAllPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    
-    const backendUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+    const backendUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:8085';
 
     useEffect(() => {
         async function loadEvents() {
@@ -46,7 +45,7 @@ export default function EventAllPage() {
             }
         }
         loadEvents();
-    }, []);
+    }, [backendUrl]);
 
     useEffect(() => {
         let result = events;
@@ -65,18 +64,41 @@ export default function EventAllPage() {
         setFilteredEvents(result);
     }, [searchTerm, selectedCategory, events]);
 
-    // 🛠️ Fixed line with 'as string[]' type casting
     const categories = ['All', ...Array.from(new Set(events.map(e => e.category).filter(Boolean)))] as string[];
 
-    if (loading) return <div className="bg-[#0b111e] min-h-screen text-white flex items-center justify-center">Loading events...</div>;
-    if (error) return <div className="bg-[#0b111e] min-h-screen text-white flex items-center justify-center text-red-500">Error: {error}</div>;
+    // ⏳ প্রোপার লোডিং স্পিনার ও প্রিমিয়াম ডার্ক ব্যাকগ্রাউন্ড
+    if (loading) {
+        return (
+            <div className="bg-[#0b111e] min-h-screen text-white flex flex-col items-center justify-center gap-3">
+                <Loader2 className="animate-spin text-orange-500" size={32} />
+                <p className="text-sm font-medium text-slate-400">Loading amazing experiences...</p>
+            </div>
+        );
+    }
+
+    // ❌ প্রিমিয়াম এরর ইন্টারফেস
+    if (error) {
+        return (
+            <div className="bg-[#0b111e] min-h-screen text-white flex flex-col items-center justify-center p-6 text-center">
+                <div className="bg-red-500/10 border border-red-500/20 px-6 py-8 rounded-3xl max-w-md shadow-2xl">
+                    <h2 className="text-xl font-bold text-red-500 mb-2">Oops! Something went wrong</h2>
+                    <p className="text-sm text-slate-400 mb-4">{error}</p>
+                    <button 
+                        onClick={() => window.location.reload()} 
+                        className="bg-white/5 border border-white/10 hover:bg-white/10 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer"
+                    >
+                        Try Again
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-[#0b111e] min-h-screen text-white pb-16 font-sans">
             
             {/* 🎯 ১. প্রিমিয়াম ডার্ক থিম হিরো ব্যানার */}
             <div className="relative bg-[#0f172a] border-b border-white/5 overflow-hidden py-16 md:py-24 px-6 mb-12 shadow-2xl">
-                {/* ব্যাকগ্রাউন্ড গ্লোয়িং ইফেক্ট */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[250px] bg-orange-500/10 blur-[120px] rounded-full pointer-events-none" />
                 <div className="absolute -top-10 -right-10 w-[300px] h-[300px] bg-blue-500/5 blur-[100px] rounded-full pointer-events-none" />
                 
@@ -85,7 +107,7 @@ export default function EventAllPage() {
                         <Sparkles size={12} /> Explore the Best Experiences
                     </div>
                     <h1 className="text-4xl md:text-6xl font-black tracking-tight text-white mb-4">
-                        Discover Amazing <span className="text-orange-500 bg-linear-to-r from-orange-500 to-amber-400 bg-clip-text text-transparent">Events</span>
+                        Discover Amazing <span className="text-orange-500 bg-gradient-to-r from-orange-500 to-amber-400 bg-clip-text text-transparent">Events</span>
                     </h1>
                     <p className="text-slate-400 max-w-xl mx-auto text-sm md:text-base font-medium leading-relaxed">
                         Find and book tickets for the most popular concerts, tech conferences, workshops, and exclusive festivals happening around you.
@@ -149,7 +171,7 @@ export default function EventAllPage() {
                     </div>
                 </div>
                 
-                {/* 动态 কার্ড লেআউট */}
+                {/* 🖼️ ডাইনামিক কার্ড লেআউট */}
                 <div className={
                     viewMode === 'grid' 
                         ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" 
@@ -158,27 +180,27 @@ export default function EventAllPage() {
                     {filteredEvents.map((event) => (
                         <div 
                             key={event._id} 
-                            className={`bg-[#0f172a] rounded-2xl overflow-hidden border transition-all duration-300 hover:scale-[1.01] shadow-xl ${
-                                event.isFeatured ? 'border-orange-600' : 'border-white/5'
+                            className={`bg-[#0f172a] rounded-2xl overflow-hidden border transition-all duration-300 hover:scale-[1.01] shadow-xl flex ${
+                                event.isFeatured ? 'border-orange-600/50 shadow-orange-600/5' : 'border-white/5'
                             } ${
-                                viewMode === 'list' ? 'flex flex-col sm:flex-row h-auto sm:h-48' : 'flex flex-col justify-between'
+                                viewMode === 'list' ? 'flex-col sm:flex-row h-auto sm:h-48' : 'flex-col justify-between'
                             }`}
                         >
                             {/* ইমেজ সেকশন */}
-                            <div className={`relative bg-slate-800 shrink-0 ${
+                            <div className={`relative bg-slate-800 shrink-0 overflow-hidden ${
                                 viewMode === 'list' ? 'w-full sm:w-64 h-48 sm:h-full' : 'h-48 w-full'
                             }`}>
                                 {event.image ? (
                                     <img 
                                         src={event.image} 
                                         alt={event.title} 
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                                     />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-slate-500">No Image</div>
+                                    <div className="w-full h-full flex items-center justify-center text-slate-500 text-xs">No Image Available</div>
                                 )}
                                 <span className="absolute bottom-3 right-3 bg-[#0b111e]/90 text-orange-400 font-bold px-3 py-1 rounded-full text-xs border border-white/10 backdrop-blur-sm">
-                                    $ {event.price || 'Free'}
+                                    {event.price && Number(event.price) > 0 ? `$${event.price}` : 'Free'}
                                 </span>
                             </div>
 
@@ -205,11 +227,11 @@ export default function EventAllPage() {
                                 }`}>
                                     <div className="flex items-center gap-2">
                                         <FaCalendarAlt className="text-orange-500 text-xs shrink-0" />
-                                        <span>{event.date} • {event.time || '07:00 PM'}</span>
+                                        <span>{event.date || 'TBD'} • {event.time || '07:00 PM'}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <FaMapMarkerAlt className="text-orange-500 text-xs shrink-0" />
-                                        <span className="line-clamp-1">{event.location}</span>
+                                        <span className="line-clamp-1">{event.location || 'Online / TBD'}</span>
                                     </div>
                                 </div>
                             </div>
@@ -235,7 +257,15 @@ export default function EventAllPage() {
 
                 {/* নো ডাটা মেসেজ */}
                 {filteredEvents.length === 0 && (
-                    <p className="text-center text-slate-500 mt-16 text-sm">No events match your search criteria.</p>
+                    <div className="text-center text-slate-500 py-16 flex flex-col items-center justify-center gap-2">
+                        <p className="text-sm">No events match your search criteria.</p>
+                        <button 
+                            onClick={() => { setSearchTerm(''); setSelectedCategory('All'); }}
+                            className="text-xs text-orange-500 hover:underline font-semibold cursor-pointer"
+                        >
+                            Reset Filters
+                        </button>
+                    </div>
                 )}
             </div>
         </div>
