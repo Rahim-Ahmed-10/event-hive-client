@@ -6,14 +6,17 @@ const client = new MongoClient(process.env.MONGO_DB_URI!);
 const db = client.db(process.env.AUTH_DB_NAME || "event-hive_db");
 
 export const auth = betterAuth({
-  // 🛠️ TypeScript Error Fix: mongodbAdapter থেকে অগোছালো schema বাদ দেওয়া হয়েছে
   database: mongodbAdapter(db),
+
+  // 🛠️ ECONNREFUSED 127.0.0.1:8085 এরর ফিক্স:
+  // Vercel-এর এনভায়রনমেন্ট ভেরিয়েবল থেকে ডাইনামিক URL নেবে, না থাকলে লোকালহোস্ট ব্যবহার করবে।
+  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:8085",
 
   emailAndPassword: {
     enabled: true,
   },
 
-  // 👤 ১. ক্লায়েন্ট ও ডাটাবেজ লেভেলে কাস্টম ফিল্ড যুক্ত করার স্ট্যান্ডার্ড নিয়ম
+  // 👤 ১. ক্লায়েন্ট ও ডাটাবেজ লেভেলে কাস্টম ফিল্ড যুক্ত করার স্ট্যান্ডার্ড নিয়ম
   user: {
     additionalFields: {
       role: {
