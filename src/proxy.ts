@@ -27,9 +27,6 @@ export async function proxy(request: NextRequest) {
 }
  
 export const config = {
-  // 🛠️ matcher-এ তোমার ডিটেইলস পেজের পাথ যুক্ত করা হলো
-  // এখানে '/events/:id*' এবং '/details/:id*' দুটি কমন প্যাটার্নই দিয়ে দেওয়া হয়েছে। 
-  // তোমার প্রজেক্টের আসল ডাইনামিক পাথের সাথে মিলিয়ে এটি পরিবর্তন করে নিতে পারো।
   matcher: [
     '/profile', 
     '/dashboard/user', 

@@ -4,16 +4,24 @@ import { jwt } from "better-auth/plugins";
 import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "@better-auth/mongo-adapter";
 
-const client = new MongoClient(process.env.MONGO_DB_URI!);
+// 🛠️ বিল্ড টাইমে ক্র্যাশ হওয়া রোধ করার জন্য সেফ চেক
+const mongoUri = process.env.MONGO_DB_URI;
+if (!mongoUri) {
+  console.warn("⚠️ Warning: MONGO_DB_URI is not defined in environment variables.");
+}
+
+const client = new MongoClient(mongoUri || "mongodb://localhost:27017/fallback_db");
 const db = client.db(process.env.AUTH_DB_NAME || "event-hive_db");
 
 export const auth = betterAuth({
   database: mongodbAdapter(db),
 
-  // 🛠️ লোকালহোস্ট এরর দূর করার জন্য ডাইনামিক এবং সেফ ইউআরএল চেকিং:
-  baseURL: typeof window === "undefined" 
-    ? (process.env.BETTER_AUTH_URL || "https://event-hive-client-self.vercel.app") 
-    : window.location.origin,
+  // 🛠️ সার্ভার সাইড এবং ক্লায়েন্ট সাইড উভয়ের জন্য নিরাপদ baseURL হ্যান্ডলিং
+  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+trustedOrigins: [
+      "http://localhost:3000",
+      "https://event-hive-client-self.vercel.app"
+    ],
 
   emailAndPassword: {
     enabled: true,
@@ -39,7 +47,10 @@ export const auth = betterAuth({
     },
   },
 
-  // 💡 প্লাগইনস অবজেক্টটি session-এর বাইরে (রুট লেভেলে) রাখতে হয়
+  // 🛡️ ডোমেইন অরিজিন সিকিউরিটি ফিক্স (যাতে Vercel-এ সেশন ব্লক না হয়)
+ 
+
+  // 💡 প্লাগইনস অবজেক্টটি session-এর বাইরে (রুট লেভেলে) রাখতে হয়
   plugins: [
     jwt()
   ],
