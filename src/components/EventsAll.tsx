@@ -26,6 +26,7 @@ export default function EventAllPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
+    
     const backendUrl = process.env.NEXT_PUBLIC_SERVER_URL;
 
     useEffect(() => {

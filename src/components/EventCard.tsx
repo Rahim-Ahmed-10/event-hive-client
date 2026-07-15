@@ -23,6 +23,9 @@ export default function EventCard({ event }: EventCardProps) {
   const { data: session } = authClient.useSession();
   const user = session?.user;
 
+ 
+
+
   // States
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isBooked, setIsBooked] = useState(false);

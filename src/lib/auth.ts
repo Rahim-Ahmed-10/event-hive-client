@@ -1,4 +1,6 @@
 import { betterAuth } from "better-auth";
+// 💡 সঠিক সাব-পাথ থেকে jwt প্লাগইনটি ইমপোর্ট করা হলো
+import { jwt } from "better-auth/plugins"; 
 import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "@better-auth/mongo-adapter";
 
@@ -30,9 +32,15 @@ export const auth = betterAuth({
       strategy: "jwt",
       maxAge: 60 * 24 * 30,
     },
+
     additionalFields: {
       role: { type: "string" },
       plan: { type: "string" },
     },
   },
+
+  // 💡 প্লাগইনস অবজেক্টটি session-এর বাইরে (রুট লেভেলে) রাখতে হয়
+  plugins: [
+    jwt()
+  ],
 });

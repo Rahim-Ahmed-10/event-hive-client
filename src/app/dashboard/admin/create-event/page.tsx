@@ -13,10 +13,16 @@ import {
   ArrowLeft 
 } from "lucide-react";
 import Link from "next/link";
+import { authClient } from "@/lib/auth-client";
 
+// 💡 ক্লায়েন্ট কম্পোনেন্ট থেকে async বাদ দেওয়া হয়েছে
 export default function CreateEventPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  
+  // 💡 better-auth এর সেশন/টোকেন ডেটা ক্লায়েন্ট সাইডে নেওয়ার জন্য
+  const { data: session } = authClient.useSession();
+
   const [formData, setFormData] = useState({
     title: "",
     category: "Music", // ডিফল্ট সিলেক্টেড
@@ -46,11 +52,19 @@ export default function CreateEventPage() {
         price: parseFloat(formData.price) || 0,
       };
 
-      // এখানে আপনার ব্যাকএন্ডের ইভেন্ট ক্রিয়েট করার API কল হচ্ছে
+      // 💡 better-auth সেশন থেকে অ্যাক্সেস টোকেন বা সেশন আইডি নেওয়া (অথবা টোকেন প্রোপার্টি থাকলে তা ব্যবহার করা)
+      // যদি better-auth এর সেশনে সরাসরি কুকি বা টোকেন ম্যানেজড থাকে, তাহলে headers-এ এভাবে পাঠাতে পারো:
+      const token = session?.session?.token || "";
+//       console.log("Current Better-Auth Session Data:", session);
+// console.log("Access Token:", session?.session?.token); 
+
+      // এখানে আপনার ব্যাকএন্ডের ইভেন্ট ক্রিয়েট করার API কল হচ্ছে
       const response = await fetch(`${BACKEND_URL}/events`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          // 💡 নিচে Authorization হেডার হিসেবে টোকেনটি যুক্ত করে দেওয়া হলো
+          "Authorization": `Bearer ${token}`, 
         },
         body: JSON.stringify(eventPayload),
       });
@@ -59,7 +73,7 @@ export default function CreateEventPage() {
 
       if (response.ok) {
         alert("🎉 Event Created Successfully!");
-        router.push("/dashboard/admin/manage-events"); // সাকসেস হলে ম্যানেজ ইভেন্ট পেজে নিয়ে যাবে
+        router.push("/dashboard/admin/manage-events"); // সাকসেস হলে ম্যানেজ ইভেন্ট পেজে নিয়ে যাবে
       } else {
         alert(`❌ Error: ${data.message || "Failed to create event"}`);
       }
@@ -87,7 +101,7 @@ export default function CreateEventPage() {
         </div>
       </div>
 
-      {/* 📝 ক্রিয়েট ইভেন্ট ফর্ম */}
+      {/* 📝 ক্রিয়েট ইভেন্ট ফর্ম */}
       <form onSubmit={handleSubmit} className="bg-[#0b1120] border border-white/5 p-8 rounded-3xl shadow-2xl space-y-6">
         
         {/* ১. ইভেন্ট টাইটেল */}
@@ -140,7 +154,7 @@ export default function CreateEventPage() {
           </div>
         </div>
 
-        {/* ৩. তারিখ ও সময় (Grid) */}
+        {/* ৩. তারিখ ও সময় (Grid) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <label className="text-xs font-bold uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
@@ -244,4 +258,3 @@ export default function CreateEventPage() {
     </div>
   );
 }
-

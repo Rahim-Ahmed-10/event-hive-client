@@ -64,7 +64,7 @@ export default function AdminOverview() {
  useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8085";
+        const BACKEND_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:8085";
         console.log("Fetching from Backend URL:", BACKEND_URL);
 
         const [eventsRes, bookingsRes, usersRes] = await Promise.all([
