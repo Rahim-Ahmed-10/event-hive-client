@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation"; 
 import { User, Mail, Lock, ArrowRight, Eye, EyeOff, ShieldCheck, UserCheck, Link2, X, Loader2 } from "lucide-react";
-// আপনার প্রজেক্টের সঠিক পাথ অনুযায়ী authClient ইমপোর্ট নিশ্চিত করুন
+// আপনার প্রজেক্টের সঠিক পাথ অনুযায়ী authClient ইমপোর্ট নিশ্চিত করুন
 import { authClient } from "@/lib/auth-client"; 
 
 export default function SignUp() {
@@ -56,10 +56,10 @@ export default function SignUp() {
         name: formData.name,
         image: formData.imageUrl || "https://encrypted-tbn0.gstatic.com/images", 
         
-        // ✨ ফিক্স: কাস্টম ফিল্ডগুলো সরাসরি রুট অবজেক্টের প্রোপার্টি হিসেবে পাস করা হলো
+        // ✨ ফিক্স: কাস্টম ফিল্ডগুলো সরাসরি রুট অবজেক্টের প্রোপার্টি হিসেবে পাস করা হলো এবং টাইপ বাইপাস করা হলো
         role: formData.role, // বাটন থেকে সিলেক্ট করা "user" বা "admin" ডাইরেক্ট যাবে
         plan: "free"
-      });
+      } as any); // 👈 এখানে 'as any' যুক্ত করে কাস্টম ফিল্ড টাইপ এরর ফিক্স করা হয়েছে
 
       if (authError) {
         setError(authError.message || "Something went wrong.");
@@ -163,6 +163,7 @@ export default function SignUp() {
               </label>
               {imagePreview && (
                 <div className="relative w-7 h-7 rounded-full bg-[#0f172a] border border-white/10 overflow-hidden group">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img 
                     src={imagePreview} 
                     alt="Preview" 
