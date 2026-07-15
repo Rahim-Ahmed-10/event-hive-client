@@ -60,9 +60,6 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
 
   return (
     <>
-      {/* =========================================================================
-          🖥️ ১. প্রিমিয়াম ডেস্কটপ সাইডবার (md:flex)
-          ========================================================================= */}
       <aside 
         className="hidden md:flex fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-[#0b1120] to-[#070b14] border-r border-white/5 p-6 flex-col justify-between h-screen shrink-0"
       >

@@ -13,7 +13,7 @@ export default function DashboardLayout({
     <div className="min-h-screen bg-[#0f172a] text-gray-300 font-sans flex">
       
       {/* 🖥️ আলাদা করা সাইডবার (যা ডেস্কটপে fixed এবং মোবাইলে hidden/bottom বার হিসেবে কাজ করবে) */}
-      <Sidebar isOpen={isSidebarOpen} setIsOpen={isSidebarOpen} />
+     <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
       {/* 🚀 ডানপাশের মেইন কন্টেন্ট এরিয়া (ডেস্কটপে md:ml-64 দিয়ে সাইডবারের ডানপাশ থেকে শুরু করা হয়েছে) */}
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto md:ml-64 transition-all duration-300">
