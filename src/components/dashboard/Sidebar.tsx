@@ -13,7 +13,7 @@ import {
   Ticket,
   User,    
 } from "lucide-react";
-// Better-Auth ক্লায়েন্ট ইমপোর্ট
+// Better-Auth ক্লায়েন্ট ইম্পোর্ট
 import { authClient } from "@/lib/auth-client";
 
 interface SidebarProps {
@@ -43,12 +43,14 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
 
   // লগইন করা ইউজারের সেশন ডাটা নিয়ে আসা
   const { data: session } = authClient.useSession();
-  const user = session?.user;
+  
+  // 🛠️ TypeScript Error Fix: user অবজেক্টকে any হিসেবে কাস্ট করা হয়েছে
+  const user = session?.user as any;
 
   // 🎯 ইউজার রোল অনুযায়ী সঠিক মেনুটি সিলেক্ট করা
   const menuItems = user?.role === "admin" ? adminMenuItems : userMenuItems;
 
-  // 🚪 Better-Auth দিয়ে লগআউট
+  // 🚪 Better-Auth দিয়ে লগআউট
   const handleLogout = async () => {
     try {
       await authClient.signOut();
@@ -83,7 +85,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
             </Link>
           </div>
 
-          {/* 🌟 গ্লোয়িং অ্যাক্টিভ ইফেক্টসহ নেভিগেশন লিংকসমূহ */}
+          {/* 🌟 গ্লোয়িং অ্যাক্টিভ ইফেক্টসহ নেভিগেশন লিংকসমূহ */}
           <nav className="flex-1 space-y-2 overflow-y-auto pr-1 scrollbar-none">
             {menuItems.map((item) => {
               const Icon = item.icon;
@@ -177,7 +179,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
         </nav>
       </div>
 
-      {/* ⚠️ সেফটি প্যাডিং (যাতে মেইন পেজের কন্টেন্ট নিচে ঢাকা না পড়ে) */}
+      {/* ⚠️ সেফটি প্যাডিং (যাতে মেইন পেজের কন্টেন্ট নিচে ঢাকা না পড়ে) */}
       <div className="md:hidden h-24 pointer-events-none" />
     </>
   );
