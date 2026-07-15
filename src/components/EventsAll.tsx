@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FaCalendarAlt, FaMapMarkerAlt, FaTag, FaSearch } from 'react-icons/fa';
 import { LayoutGrid, List, Sparkles, Loader2 } from 'lucide-react';
+import { authClient } from "@/lib/auth-client"; // 🔑 তোমার প্রোজেক্টের গ্লোবাল auth-client ইম্পোর্ট করো
 
 interface EventItem {
     _id: string;
@@ -18,6 +19,9 @@ interface EventItem {
 }
 
 export default function EventAllPage() {
+    // 🔑 Better-Auth এর রিয়্যাক্ট হুক ব্যবহার করে সেশন ও টোকেন রিট্রিভ করা হলো
+    const { data: session, isPending: sessionLoading } = authClient.useSession();
+    
     const [events, setEvents] = useState<EventItem[]>([]);
     const [filteredEvents, setFilteredEvents] = useState<EventItem[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -28,27 +32,53 @@ export default function EventAllPage() {
 
     const backendUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:8085';
 
+    // ১. প্রথম useEffect: শুধুমাত্র একবার ব্যাকএন্ড থেকে ইভেন্ট ডাটা ফেচ করবে
     useEffect(() => {
         async function loadEvents() {
             try {
+                // সেশন থেকে টোকেন নেওয়া, না থাকলে লোকাল স্টোরেজ ব্যাকআপ
+                const token = 
+                    session?.session?.token || 
+                    (session as any)?.token || 
+                    localStorage.getItem("token") || 
+                    "";
+
+                // হেডারসহ সিকিউরড রিকোয়েস্ট
                 const res = await fetch(`${backendUrl}/events`, {
-                    cache: 'no-store'
+                    cache: 'no-store',
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`,
+                    }
                 });
+                
                 if (!res.ok) throw new Error('Failed to fetch events');
                 const data = await res.json();
-                setEvents(data);
-                setFilteredEvents(data);
+                
+                if (Array.isArray(data)) {
+                    setEvents(data);
+                    setFilteredEvents(data);
+                } else {
+                    setEvents([]);
+                    setFilteredEvents([]);
+                }
             } catch (err: any) {
+                console.error("Fetch error:", err);
                 setError(err.message || 'Something went wrong');
             } finally {
                 setLoading(false);
             }
         }
-        loadEvents();
-    }, [backendUrl]);
 
+        // সেশন লোডিং শেষ হলেই কেবল ডাটা ফেচ শুরু হবে
+        if (!sessionLoading) {
+            loadEvents();
+        }
+    }, [backendUrl, session, sessionLoading]);
+
+    // ২. দ্বিতীয় useEffect: সার্চ বা ক্যাটাগরি চেঞ্জ হলে ফিল্টারিং হ্যান্ডেল করবে (কোনো ইনফিনিট লুপ হবে না)
     useEffect(() => {
-        let result = events;
+        let result = [...events];
 
         if (searchTerm.trim() !== '') {
             result = result.filter(event => 
@@ -66,8 +96,8 @@ export default function EventAllPage() {
 
     const categories = ['All', ...Array.from(new Set(events.map(e => e.category).filter(Boolean)))] as string[];
 
-    // ⏳ প্রোপার লোডিং স্পিনার ও প্রিমিয়াম ডার্ক ব্যাকগ্রাউন্ড
-    if (loading) {
+    // ⏳ লোডিং স্পিনার (সেশন এবং ডাটা উভয় লোড হওয়ার সময় দেখাবে)
+    if (sessionLoading || loading) {
         return (
             <div className="bg-[#0b111e] min-h-screen text-white flex flex-col items-center justify-center gap-3">
                 <Loader2 className="animate-spin text-orange-500" size={32} />
@@ -76,7 +106,7 @@ export default function EventAllPage() {
         );
     }
 
-    // ❌ প্রিমিয়াম এরর ইন্টারফেস
+    // ❌ এরর ইন্টারফেস
     if (error) {
         return (
             <div className="bg-[#0b111e] min-h-screen text-white flex flex-col items-center justify-center p-6 text-center">

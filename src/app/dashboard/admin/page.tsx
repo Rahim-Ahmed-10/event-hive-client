@@ -62,91 +62,113 @@ export default function AdminOverview() {
   const [loading, setLoading] = useState(true);
 
  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const BACKEND_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:8085";
-        console.log("Fetching from Backend URL:", BACKEND_URL);
+  const fetchDashboardData = async () => {
+    try {
+      const BACKEND_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:8085";
+      console.log("Fetching from Backend URL:", BACKEND_URL);
 
-        const [eventsRes, bookingsRes, usersRes] = await Promise.all([
-          fetch(`${BACKEND_URL}/events`),
-          fetch(`${BACKEND_URL}/api/bookings/all`),
-          fetch(`${BACKEND_URL}/api/users`).catch(() => null)
-        ]);
+      // 🔑 ১. কুকি থেকে Better-Auth এর সেশন টোকেনটি বের করা
+      const getCookie = (name: string) => {
+        if (typeof document === "undefined") return null;
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop()?.split(";").shift();
+        return null;
+      };
 
-        const eventsDataRaw = await eventsRes.json().catch(() => []);
-        const bookingsDataRaw = await bookingsRes.json().catch(() => []);
-        
-        // 🔍 কনসোলে প্রিন্ট করে দেখা ব্যাকএন্ড কী দিচ্ছে
-        console.log("Raw Bookings Data received:", bookingsDataRaw);
-        console.log("Raw Events Data received:", eventsDataRaw);
+      // Better-Auth সাধারণত এই নামে কুকি সেভ করে
+      const token = getCookie("better-auth.session_token");
 
-        // ডাটা অ্যারে কিনা তা নিশ্চিত করা (নয়তো খালি অ্যারে সেট করা যাতে ক্র্যাশ না করে)
-        const eventsData = Array.isArray(eventsDataRaw) ? eventsDataRaw : [];
-        const bookingsData = Array.isArray(bookingsDataRaw) ? bookingsDataRaw : [];
+      // 📝 ২. রিকোয়েস্টের জন্য হেডার অবজেক্ট তৈরি করা
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
 
-        let usersCount = 0;
-        if (usersRes) {
-          const usersDataRaw = await usersRes.json().catch(() => []);
-          const usersData = Array.isArray(usersDataRaw) ? usersDataRaw : [];
-          usersCount = usersData.length;
-        }
-
-        // স্ট্যাটস হিসাব
-        const totalEvents = eventsData.length;
-        const totalBookings = bookingsData.length;
-        const totalRevenue = bookingsData.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
-
-        setStats({
-          totalRevenue,
-          totalBookings,
-          totalEvents,
-          totalUsers: usersCount,
-        });
-
-        // শেষের ৫টি বুকিং
-        setRecentBookings(bookingsData.slice(-5).reverse());
-
-        // রেভিনিউ চার্ট ডাটা প্রসেসিং
-        const dailyData: { [key: string]: { date: string; Revenue: number; Bookings: number } } = {};
-        
-        bookingsData.forEach((b) => {
-          if (!b.bookedAt) return;
-          const dateLabel = new Date(b.bookedAt).toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-          });
-          if (!dailyData[dateLabel]) {
-            dailyData[dateLabel] = { date: dateLabel, Revenue: 0, Bookings: 0 };
-          }
-          dailyData[dateLabel].Revenue += b.totalPrice || 0;
-          dailyData[dateLabel].Bookings += b.ticketCount || 0;
-        });
-
-        const formattedTrendData = Object.values(dailyData).slice(-7);
-        setChartData(formattedTrendData);
-
-        // পাই চার্ট ক্যাটাগরি ডাটা প্রসেসিং
-        const categories: { [key: string]: number } = {};
-        eventsData.forEach((e) => {
-          const cat = e.category || "Uncategorized";
-          categories[cat] = (categories[cat] || 0) + 1;
-        });
-
-        const formattedPieData = Object.keys(categories).map((key) => ({
-          name: key,
-          value: categories[key],
-        }));
-        setPieData(formattedPieData);
-
-      } catch (error) {
-        console.error("Error fetching admin metrics:", error);
-      } finally {
-        setLoading(false);
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
       }
-    };
 
-    fetchDashboardData();
-  }, []);
+      // 🚀 ৩. হেডারে টোকেন সহ সিকিউরড রিকোয়েস্ট পাঠানো
+      const [eventsRes, bookingsRes, usersRes] = await Promise.all([
+        fetch(`${BACKEND_URL}/events`), // পাবলিক হলে হেডার না দিলেও চলে, তবে দেওয়া নিরাপদ
+        fetch(`${BACKEND_URL}/api/bookings/all`, { headers }), // 🔒 সিকিউরড
+        fetch(`${BACKEND_URL}/api/users`, { headers }).catch(() => null) // 🔒 সিকিউরড
+      ]);
+
+      const eventsDataRaw = await eventsRes.json().catch(() => []);
+      const bookingsDataRaw = await bookingsRes.json().catch(() => []);
+      
+      // 🔍 কনসোলে প্রিন্ট করে দেখা ব্যাকএন্ড কী দিচ্ছে
+      console.log("Raw Bookings Data received:", bookingsDataRaw);
+      console.log("Raw Events Data received:", eventsDataRaw);
+
+      // ডাটা অ্যারে কিনা তা নিশ্চিত করা
+      const eventsData = Array.isArray(eventsDataRaw) ? eventsDataRaw : [];
+      const bookingsData = Array.isArray(bookingsDataRaw) ? bookingsDataRaw : [];
+
+      let usersCount = 0;
+      if (usersRes) {
+        const usersDataRaw = await usersRes.json().catch(() => []);
+        const usersData = Array.isArray(usersDataRaw) ? usersDataRaw : [];
+        usersCount = usersData.length;
+      }
+
+      // স্ট্যাটস হিসাব
+      const totalEvents = eventsData.length;
+      const totalBookings = bookingsData.length;
+      const totalRevenue = bookingsData.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
+
+      setStats({
+        totalRevenue,
+        totalBookings,
+        totalEvents,
+        totalUsers: usersCount,
+      });
+
+      // শেষের ৫টি বুকিং
+      setRecentBookings(bookingsData.slice(-5).reverse());
+
+      // রেভিনিউ চার্ট ডাটা প্রসেসিং
+      const dailyData: { [key: string]: { date: string; Revenue: number; Bookings: number } } = {};
+      
+      bookingsData.forEach((b) => {
+        if (!b.bookedAt) return;
+        const dateLabel = new Date(b.bookedAt).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        });
+        if (!dailyData[dateLabel]) {
+          dailyData[dateLabel] = { date: dateLabel, Revenue: 0, Bookings: 0 };
+        }
+        dailyData[dateLabel].Revenue += b.totalPrice || 0;
+        dailyData[dateLabel].Bookings += b.ticketCount || 0;
+      });
+
+      const formattedTrendData = Object.values(dailyData).slice(-7);
+      setChartData(formattedTrendData);
+
+      // পাই চার্ট ক্যাটাগরি ডাটা প্রসেসিং
+      const categories: { [key: string]: number } = {};
+      eventsData.forEach((e) => {
+        const cat = e.category || "Uncategorized";
+        categories[cat] = (categories[cat] || 0) + 1;
+      });
+
+      const formattedPieData = Object.keys(categories).map((key) => ({
+        name: key,
+        value: categories[key],
+      }));
+      setPieData(formattedPieData);
+
+    } catch (error) {
+      console.error("Error fetching admin metrics:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchDashboardData();
+}, []);
 
   if (loading) {
     return (

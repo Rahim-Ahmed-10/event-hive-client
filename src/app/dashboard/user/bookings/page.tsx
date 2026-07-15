@@ -7,8 +7,6 @@ import {
   DollarSign, 
   ArrowRight, 
   Loader2, 
-  AlertCircle,
-  Clock,
   Download
 } from "lucide-react";
 import Link from "next/link";
@@ -31,26 +29,48 @@ export default function BookingsPage() {
 
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
-  const backendUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+  const backendUrl = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:8085";
 
   useEffect(() => {
     if (!user?.id) return;
 
     const fetchBookings = async () => {
       try {
-        // এক্সপ্রেস ব্যাকএন্ডের ডাইনামিক পোর্ট ৮MDg৫ থেকে ডাটা আনা হচ্ছে
-        const response = await fetch(`${backendUrl}/api/bookings?userId=${user.id}`);
+        // 🔒 better-auth এর সেশন থেকে টোকেন বের করা, ব্যাকআপ হিসেবে লোকালস্টোরেজ
+        const token = 
+          session?.session?.token || 
+          (session as any)?.token || 
+          localStorage.getItem("token") || 
+          "";
+
+        // 💡 নোট: ব্যাকএন্ড এপিআই-তে '/api' না থাকলে, নিচের URL থেকে '/api' বাদ দিয়ে শুধু `/bookings` ব্যবহার করবে
+        const response = await fetch(`${backendUrl}/api/bookings?userId=${user.id}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}` // 🔒 ভেরিফাই টোকেন হেডার যুক্ত করা হলো
+          }
+        });
+
         const data = await response.json();
-        setBookings(data);
+        
+        // 🛡️ সেফটি চেক: ডাটা অ্যারে হলে সেট করবে, নাহলে খালি রাখবে
+        if (Array.isArray(data)) {
+          setBookings(data);
+        } else {
+          console.warn("API response is not an array:", data);
+          setBookings([]);
+        }
       } catch (error) {
         console.error("Error fetching bookings:", error);
+        setBookings([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchBookings();
-  }, [user?.id]);
+  }, [user?.id, backendUrl, session]); // Dependencies-এ backendUrl ও session যোগ করা হয়েছে
 
   if (sessionLoading || loading) {
     return (
@@ -106,11 +126,11 @@ export default function BookingsPage() {
               key={booking._id} 
               className="group relative bg-[#0f172a] border border-white/5 p-6 rounded-2xl flex flex-col justify-between gap-6 shadow-xl hover:border-orange-500/30 transition-all duration-300 overflow-hidden"
             >
-              {/* ব্যাকগ্রাউন্ডে হালকা নিয়ন গ্লো ইফেক্ট */}
+              {/* ব্যাকগ্রাউন্ডে হালকা নিয়ন গ্লো ইফেক্ট */}
               <div className="absolute -right-16 -top-16 w-32 h-32 bg-orange-600/5 rounded-full blur-3xl group-hover:bg-orange-600/10 transition-all duration-300 pointer-events-none" />
 
               <div className="space-y-4">
-                {/* ১. টপ বার: টিকিট আইকন এবং বুকিংয়ের সময় */}
+                {/* ১. টপ বার: টিকিট আইকন এবং বুকিংয়ের সময় */}
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
                     <div className="p-2.5 bg-orange-600/10 text-orange-500 rounded-xl">
@@ -133,18 +153,18 @@ export default function BookingsPage() {
                   {booking.eventTitle}
                 </h3>
 
-                {/* ৩. বুকিংয়ের বিস্তারিত তথ্য */}
+                {/* ৩. বুকিংয়ের বিস্তারিত তথ্য */}
                 <div className="grid grid-cols-2 gap-4 pt-2 border-t border-white/5 text-sm">
                   <div className="space-y-1">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Booked Date</p>
                     <div className="flex items-center gap-1.5 text-gray-300 font-semibold">
                       <Calendar size={14} className="text-orange-500" />
                       <span>
-                        {new Date(booking.bookedAt).toLocaleDateString("en-US", {
+                        {booking.bookedAt ? new Date(booking.bookedAt).toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
                           year: "numeric"
-                        })}
+                        }) : "N/A"}
                       </span>
                     </div>
                   </div>
@@ -164,7 +184,7 @@ export default function BookingsPage() {
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Total Price</p>
                   <span className="text-lg md:text-xl font-black text-green-400">
-                    {booking.totalPrice === 0 ? "Free" : `$${booking.totalPrice}`}
+                    {Number(booking.totalPrice) === 0 ? "Free" : `$${booking.totalPrice}`}
                   </span>
                 </div>
 

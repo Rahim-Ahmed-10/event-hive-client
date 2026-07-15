@@ -115,13 +115,14 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
 
         {/* 🚪 ডেস্কটপ লগআউট বাটন */}
         <div className="pt-4 border-t border-white/5">
+          <Link href="/">
           <button
-            onClick={handleLogout}
             className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-xs font-bold uppercase tracking-wider text-red-400/80 hover:text-white hover:bg-red-500/10 border border-transparent hover:border-red-500/10 transition-all cursor-pointer"
           >
-            <LogOut size={16} />
+            <LogOut size={18} />
             <span>Exit Dashboard</span>
           </button>
+          </Link>
         </div>
       </aside>
 
@@ -166,8 +167,8 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
             })}
 
             {/* 🚪 মোবাইলের জন্য মিনিমাল এক্সিট বাটন */}
+         <Link href="/">
             <button
-              onClick={handleLogout}
               className="flex flex-col items-center justify-center flex-1 py-1.5 px-2 rounded-xl text-red-400/80 hover:text-red-500 transition-all cursor-pointer"
             >
               <div className="p-2">
@@ -175,6 +176,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
               </div>
               <span className="text-[9px] font-bold mt-1 tracking-widest uppercase">Exit</span>
             </button>
+         </Link>
           </div>
         </nav>
       </div>

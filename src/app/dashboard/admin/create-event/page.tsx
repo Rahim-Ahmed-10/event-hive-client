@@ -7,7 +7,7 @@ import {
   MapPin, 
   DollarSign, 
   Tag, 
-  Image as ImageIcon, 
+  ImageIcon, 
   PlusCircle, 
   Loader2, 
   ArrowLeft 
@@ -15,12 +15,11 @@ import {
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 
-// 💡 ক্লায়েন্ট কম্পোনেন্ট থেকে async বাদ দেওয়া হয়েছে
 export default function CreateEventPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   
-  // 💡 better-auth এর সেশন/টোকেন ডেটা ক্লায়েন্ট সাইডে নেওয়ার জন্য
+  // 💡 better-auth এর সেশন/টোকেন ডেটা ক্লায়েন্ট সাইডে নেওয়ার জন্য
   const { data: session } = authClient.useSession();
 
   const [formData, setFormData] = useState({
@@ -52,18 +51,20 @@ export default function CreateEventPage() {
         price: parseFloat(formData.price) || 0,
       };
 
-      // 💡 better-auth সেশন থেকে অ্যাক্সেস টোকেন বা সেশন আইডি নেওয়া (অথবা টোকেন প্রোপার্টি থাকলে তা ব্যবহার করা)
-      // যদি better-auth এর সেশনে সরাসরি কুকি বা টোকেন ম্যানেজড থাকে, তাহলে headers-এ এভাবে পাঠাতে পারো:
-      const token = session?.session?.token || "";
-//       console.log("Current Better-Auth Session Data:", session);
-// console.log("Access Token:", session?.session?.token); 
+      // 🛡️ Safe fallback: better-auth এর টোকেন রিট্রিভ করার মাল্টিপল পাথ চেক
+      // যদি better-auth থেকে সেশন কুকি ব্রাউজারে থাকে তবে লোকালস্টোরেজ বা সেশন ডাটা থেকে টোকেনটি বের করা হচ্ছে
+      const token = 
+        session?.session?.token || 
+        (session as any)?.token || 
+        localStorage.getItem("token") || 
+        ""; 
 
       // এখানে আপনার ব্যাকএন্ডের ইভেন্ট ক্রিয়েট করার API কল হচ্ছে
       const response = await fetch(`${BACKEND_URL}/events`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // 💡 নিচে Authorization হেডার হিসেবে টোকেনটি যুক্ত করে দেওয়া হলো
+          // 💡 নিচে Authorization হেডার হিসেবে টোকেনটি যুক্ত করে দেওয়া হলো
           "Authorization": `Bearer ${token}`, 
         },
         body: JSON.stringify(eventPayload),

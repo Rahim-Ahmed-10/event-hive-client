@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎪 EventHive - Event Booking & Management System
 
-## Getting Started
+**EventHive** একটি আধুনিক ইভেন্ট বুকিং এবং ম্যানেজমেন্ট ওয়েব অ্যাপ্লিকেশন। এর মাধ্যমে ব্যবহারকারীরা সহজে বিভিন্ন ইভেন্ট দেখতে পারেন, টিকিট বুকিং করতে পারেন এবং অ্যাডমিনরা সম্পূর্ণ ইভেন্ট ও বুকিং সিস্টেমটি ড্যাশবোর্ডের মাধ্যমে নিয়ন্ত্রণ করতে পারেন।
 
-First, run the development server:
+---
 
-```bash
+## 🚀 মূল ফিচারসমূহ (Features)
+
+### 👤 ইউজার প্যানেল:
+* **রিয়েল-টাইম ইভেন্ট ব্রাউজিং:** হোমপেজ থেকে যেকোনো পাবলিক ইভেন্ট এবং তার ডিটেইলস দেখা।
+* **টিকিট বুকিং:** সরাসরি সিট সংখ্যা এবং প্রাইস অনুযায়ী টিকিট বুকিং করার সুবিধা।
+* **বুকিং ট্র্যাকিং:** নিজের কেনা টিকিট এবং বুকিং হিস্ট্রি দেখার জন্য ডেডিকেটেড ড্যাশবোর্ড।
+* **প্রোফাইল ম্যানেজমেন্ট:** নিজের প্রোফাইল ইনফরমেশন আপডেট করার সুবিধা।
+* **সুরক্ষিত অথেনটিকেশন:** Better-Auth এর মাধ্যমে নিরাপদ সোশ্যাল ও ক্রেডেনশিয়াল সাইন-ইন।
+
+### 🛠️ অ্যাডমিন প্যানেল (Admin Overview):
+* **লাইভ ড্যাশবোর্ড:** মোট ইভেন্ট, মোট বুকিং, মোট রেভিনিউ এবং মোট ইউজারের রিয়েল-টাইম স্ট্যাটিস্টিকস।
+* **চার্ট অ্যানালিটিক্স:** রেভিনিউ ট্রেন্ড (Recharts-এর মাধ্যমে) এবং ক্যাটাগরি ভিত্তিক ইভেন্টের পাই-চার্ট বিশ্লেষণ।
+* **ইভেন্ট ম্যানেজমেন্ট:** নতুন ইভেন্ট তৈরি (CRUD), এডিট ও ডিলিট করার সম্পূর্ণ নিয়ন্ত্রণ।
+* **ইউজার ও বুকিং লিস্ট:** রেজিস্টার্ড ইউজারদের তালিকা দেখা, অপ্রয়োজনীয় ইউজার ডিলিট করা এবং সকল সফল বুকিং ট্র্যাক করা।
+* **সিস্টেম কনফিগারেশন:** সাইটের নাম পরিবর্তন, মেইনটেন্যান্স মোড অন/অফ এবং কমিশন রেট ডাইনামিকালি পরিবর্তন করার সুবিধা।
+
+---
+
+## 🛠️ টেকনোলজি স্ট্যাক (Tech Stack)
+
+### **Frontend:**
+* **Framework:** Next.js (App Router)
+* **Styling:** Tailwind CSS, Shadcn UI
+* **Charts:** Recharts
+* **State & Data Fetching:** React Hooks (`useEffect`, `useState`)
+* **Authentication:** Better-Auth (Client Session Management)
+
+### **Backend:**
+* **Runtime:** Node.js (Express with TypeScript)
+* **Database:** MongoDB (via official MongoDB Driver)
+* **Security & Tokens:** `jose-cjs` (for JWS/JWKS verification)
+
+---
+
+## ⚙️ প্রজেক্ট সেটআপ এবং রান করার নিয়ম (Installation Guide)
+
+### ১. ব্যাকএন্ড সেটআপ (Backend Setup):
+১. প্রথমে ব্যাকএন্ড ডিরেক্টরিতে যান:
+   ```bash
+   cd event-hive-server
+
+   ২. ডিপেন্ডেন্সিগুলো ইনস্টল করুন:
+
+Bash
+npm install
+৩. রুটে একটি .env ফাইল তৈরি করুন এবং নিচের ভ্যারিয়েবলগুলো সেট করুন:
+
+Code snippet
+PORT=8085
+MONGO_DB_URI=your_mongodb_connection_string
+BETTER_AUTH_URL=http://localhost:3000
+৪. ব্যাকএন্ড সার্ভারটি চালু করুন:
+
+Bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+২. ফ্রন্টএন্ড সেটআপ (Frontend Setup):
+১. ফ্রন্টএন্ড ডিরেক্টরিতে যান:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Bash
+cd event-hive-client
+২. ডিপেন্ডেন্সিগুলো ইনস্টল করুন:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Bash
+npm install
+৩. রুটে একটি .env.local ফাইল তৈরি করুন এবং নিচের ভ্যারিয়েবলটি দিন:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Code snippet
+NEXT_PUBLIC_SERVER_URL=http://localhost:8085
+৪. ফ্রন্টএন্ড ডেভেলপমেন্ট সার্ভার চালু করুন:
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Bash
+npm run dev

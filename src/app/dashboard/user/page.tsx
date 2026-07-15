@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-// ডাটাবেজের ডাটা ফরম্যাট অনুযায়ী ইন্টারফেস ডিফাইন করা হলো
 interface Booking {
   _id: string;
   eventId: string;
@@ -30,27 +29,47 @@ export default function UserOverview() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const backendUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+  const backendUrl = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:8085";
 
-  // ডাটাবেজ থেকে ইউজারের বুকিং ডাটা ফেচ করা
   useEffect(() => {
     if (!user?.id) return;
 
     const fetchBookings = async () => {
       try {
-        // আপনার এপিআই রুট অনুযায়ী ইউআরএল পরিবর্তন করে নিবেন (যেমন: `/api/user/bookings?userId=${user.id}`)
-        const response = await fetch(`${backendUrl}/api/bookings?userId=${user.id}`);
+        // 🔒 better-auth এর সেশন থেকে টোকেন বের করা, ব্যাকআপ হিসেবে লোকালস্টোরেজ
+        const token = 
+          session?.session?.token || 
+          (session as any)?.token || 
+          localStorage.getItem("token") || 
+          "";
+
+        // 💡 নোট: যদি ব্যাকএন্ড রাউটে '/api' না থাকে, তবে নিচের URL থেকে '/api' বাদ দিয়ে শুধু `/bookings` লিখবে।
+        const response = await fetch(`${backendUrl}/api/bookings?userId=${user.id}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          }
+        });
+        
         const data = await response.json();
-        setBookings(data);
+        
+        if (Array.isArray(data)) {
+          setBookings(data);
+        } else {
+          console.warn("API did not return an array:", data);
+          setBookings([]);
+        }
       } catch (error) {
         console.error("Error fetching bookings:", error);
+        setBookings([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchBookings();
-  }, [user?.id]);
+  }, [user?.id, backendUrl, session]);
 
   if (sessionLoading || loading) {
     return (
@@ -60,15 +79,21 @@ export default function UserOverview() {
     );
   }
 
-  // 📊 ডাটাবেজের তথ্য থেকে ডাইনামিক স্ট্যাটস হিসেব করা
-  const totalBookings = bookings.length;
-  const totalTickets = bookings.reduce((sum, b) => sum + (b.ticketCount || 0), 0);
-  const totalSpent = bookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
+  const isBookingsArray = Array.isArray(bookings);
+  const totalBookings = isBookingsArray ? bookings.length : 0;
+  
+  const totalTickets = isBookingsArray 
+    ? bookings.reduce((sum, b) => sum + (Number(b.ticketCount) || 0), 0) 
+    : 0;
+    
+  const totalSpent = isBookingsArray 
+    ? bookings.reduce((sum, b) => sum + (Number(b.totalPrice) || 0), 0) 
+    : 0;
 
   const stats = [
     { name: "Total Booked Events", value: totalBookings, icon: Calendar, color: "text-blue-500 bg-blue-500/10" },
     { name: "Total Tickets Purchased", value: totalTickets, icon: Ticket, color: "text-orange-500 bg-orange-500/10" },
-    { name: "Total Spent", value: `$${totalSpent}`, icon: DollarSign, color: "text-green-500 bg-green-500/10" },
+    { name: "Total Spent", value: `$${totalSpent.toFixed(2)}`, icon: DollarSign, color: "text-green-500 bg-green-500/10" },
   ];
 
   return (
@@ -117,7 +142,7 @@ export default function UserOverview() {
           </Link>
         </div>
 
-        {bookings.length === 0 ? (
+        {!isBookingsArray || bookings.length === 0 ? (
           <div className="text-center py-12 border border-dashed border-white/5 rounded-xl text-gray-500">
             <Ticket className="mx-auto mb-3 opacity-50" size={32} />
             <p className="text-sm">No booked events found. Start booking now!</p>
@@ -138,15 +163,15 @@ export default function UserOverview() {
                   <tr key={booking._id} className="hover:bg-white/[0.02] transition-colors">
                     <td className="py-4 font-semibold text-white">{booking.eventTitle}</td>
                     <td className="py-4 text-gray-400">
-                      {new Date(booking.bookedAt).toLocaleDateString("en-US", {
+                      {booking.bookedAt ? new Date(booking.bookedAt).toLocaleDateString("en-US", {
                         year: "numeric",
                         month: "short",
                         day: "numeric"
-                      })}
+                      }) : "N/A"}
                     </td>
                     <td className="py-4 text-center font-semibold text-orange-400">{booking.ticketCount}</td>
                     <td className="py-4 text-right font-bold text-green-400">
-                      {booking.totalPrice === 0 ? "Free" : `$${booking.totalPrice}`}
+                      {Number(booking.totalPrice) === 0 ? "Free" : `$${booking.totalPrice}`}
                     </td>
                   </tr>
                 ))}
