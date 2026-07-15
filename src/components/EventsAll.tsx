@@ -62,7 +62,8 @@ export default function EventAllPage() {
         setFilteredEvents(result);
     }, [searchTerm, selectedCategory, events]);
 
-    const categories = ['All', ...Array.from(new Set(events.map(e => e.category).filter(Boolean)))];
+    // 🛠️ Fixed line with 'as string[]' type casting
+    const categories = ['All', ...Array.from(new Set(events.map(e => e.category).filter(Boolean)))] as string[];
 
     if (loading) return <div className="bg-[#0b111e] min-h-screen text-white flex items-center justify-center">Loading events...</div>;
     if (error) return <div className="bg-[#0b111e] min-h-screen text-white flex items-center justify-center text-red-500">Error: {error}</div>;
@@ -70,9 +71,9 @@ export default function EventAllPage() {
     return (
         <div className="bg-[#0b111e] min-h-screen text-white pb-16 font-sans">
             
-            {/* 🎯 ১. প্রিমিয়াম ডার্ক থিম হিরো ব্যানার */}
+            {/* 🎯 ১. প্রিমিয়াম ডার্ক থিম হিরো ব্যানার */}
             <div className="relative bg-[#0f172a] border-b border-white/5 overflow-hidden py-16 md:py-24 px-6 mb-12 shadow-2xl">
-                {/* ব্যাকগ্রাউন্ড গ্লোয়িং ইফেক্ট */}
+                {/* ব্যাকগ্রাউন্ড গ্লোয়িং ইফেক্ট */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[250px] bg-orange-500/10 blur-[120px] rounded-full pointer-events-none" />
                 <div className="absolute -top-10 -right-10 w-[300px] h-[300px] bg-blue-500/5 blur-[100px] rounded-full pointer-events-none" />
                 
