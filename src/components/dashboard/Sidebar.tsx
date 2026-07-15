@@ -25,8 +25,7 @@ interface SidebarProps {
 const adminMenuItems = [
   { name: "Overview", href: "/dashboard/admin", icon: LayoutDashboard },
   { name: "Create", href: "/dashboard/admin/create-event", icon: CalendarPlus },
-  { name: "Events", href: "/dashboard/admin/manage-events", icon: CalendarDays },
-  { name: "Update", href: "/dashboard/admin/update-event", icon: CalendarCog }, 
+  { name: "Events", href: "/dashboard/admin/manage-events", icon: CalendarDays }, 
   { name: "Users", href: "/dashboard/admin/users", icon: Users }, 
   { name: "Settings", href: "/dashboard/admin/settings", icon: Settings },
 ];
