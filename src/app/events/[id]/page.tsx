@@ -37,10 +37,10 @@ export default async function EventDetailsPage({ params }: PageProps) {
     const event = await getSingleEvent(resolvedParams.id);
 
     const isFree = 
-      !event.price || 
-      String(event.price).toLowerCase() === 'free' || 
-      event.price === 0 || 
-      event.price === '0';
+      !event.price ||
+String(event.price).toLowerCase() === 'free' ||
+Number(event.price) === 0 ||
+event.price === '0';
 
     return (
         <div className="bg-[#0b1329] min-h-screen text-slate-100 py-10 px-4 sm:px-6 lg:px-8 font-sans selection:bg-orange-500 selection:text-white">
