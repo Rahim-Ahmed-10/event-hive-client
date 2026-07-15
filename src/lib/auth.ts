@@ -6,30 +6,14 @@ const client = new MongoClient(process.env.MONGO_DB_URI!);
 const db = client.db(process.env.AUTH_DB_NAME || "event-hive_db");
 
 export const auth = betterAuth({
-  // ১. ডাটাবেজ লেভেলে কাস্টম ফিল্ড অ্যাড করা
-  database: mongodbAdapter(db, {
-    client,
-    schema: {
-      user: {
-        fields: {
-          role: {
-            type: "string",
-            defaultValue: "user",
-          },
-          plan: {
-            type: "string",
-            defaultValue: "free",
-          },
-        },
-      },
-    },
-  }),
+  // 🛠️ TypeScript Error Fix: mongodbAdapter থেকে অগোছালো schema বাদ দেওয়া হয়েছে
+  database: mongodbAdapter(db),
 
   emailAndPassword: {
     enabled: true,
   },
 
-  // ২. ক্লায়েন্ট লেভেলে ইনপুট রিসিভ করার জন্য অতিরিক্ত ফিল্ড ডিফাইন করা
+  // 👤 ১. ক্লায়েন্ট ও ডাটাবেজ লেভেলে কাস্টম ফিল্ড যুক্ত করার স্ট্যান্ডার্ড নিয়ম
   user: {
     additionalFields: {
       role: {
@@ -45,7 +29,7 @@ export const auth = betterAuth({
     },
   },
 
-  // ৩. সেশন বা টোকেনের মাধ্যমে ফ্রন্টএন্ডে ডেটা পাস করার জন্য কনফিগারেশন
+  // 🔑 ২. সেশন ও JWT টোকেনের মাধ্যমে ফ্রন্টএন্ডে রোল ও প্ল্যান ডেটা পাস করার কনফিগারেশন
   session: {
     cookieCache: {
       enabled: true,
