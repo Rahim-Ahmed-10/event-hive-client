@@ -1,46 +1,34 @@
+// src/middleware.ts
+
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { auth } from './lib/auth'
-
-// 💡 Vercel-এ Edge Runtime-এর কারণে MongoDB/Better-Auth ক্র্যাশ হওয়া রোধ করতে Node.js রানটাইম ব্যবহার করা হলো
-export const runtime = 'nodejs';
 
 export async function proxy(request: NextRequest) {
-    
-    // 🛠️ সরাসরি রিকোয়েস্ট হেডার দিয়ে সেশন রিড করা হচ্ছে (Vercel ফ্রেন্ডলি)
-    const session = await auth.api.getSession({
-        headers: request.headers, 
-    })
-
     const { pathname } = request.nextUrl
 
-    // 🔑 ১. ইউজার যদি সাইন-আউট (লগইন না করা) থাকে
-    if (!session) {
-        // সাইন-ইন করার পর যাতে ইউজার আবার সরাসরি এই পেজেই ফিরে আসতে পারে
+    // 🍪 Better-Auth এর ডিফল্ট সেশন কুকি চেক করা হচ্ছে
+    // (যদি তোমার কাস্টম কুকি নেম থাকে তবে "better-auth.session_token" এর জায়গায় সেটি দেবে)
+    const sessionToken = request.cookies.get("better-auth.session_token")?.value;
+
+    // 🔑 ১. ইউজার যদি লগইন করা না থাকে (কুকি না থাকে)
+    if (!sessionToken) {
         const signInUrl = new URL('/signin', request.url)
-        signInUrl.searchParams.set('callbackUrl', pathname)
+        signInUrl.searchParams.set('callbackUrl', pathname) // লগইন করার পর আগের পেজে ফেরত নেওয়ার জন্য
         return NextResponse.redirect(signInUrl)
     }
 
-    // Better-Auth টাইপ চেক এড়াতে কাস্ট করা হলো
-    const user = session?.user as any;
-
-    // 🔑 ২. ইউজার যদি ফ্রি প্ল্যানে থাকে এবং ড্যাশবোর্ড বা প্রটেক্টেড রাউটে যেতে চায়
-    if (user?.role === 'user' && user?.plan === "free") {
-         return NextResponse.redirect(new URL('/pricing', request.url))
-    }
+    // 💡 দ্রষ্টব্য: যদি ইউজার ফ্রি প্ল্যানে থাকে, তবে তার রোল বা প্ল্যান চেক করার জন্য 
+    // সার্ভার সাইড পেজে (Server Component) বা layout.tsx-এ auth.api.getSession() কল করে pricing-এ রিডাইরেক্ট করা সবচেয়ে নিরাপদ।
+    // মিডলওয়্যারে ডাটাবেজ ব্লক এড়াতে এই কুকি-বেসড মেথডটিই ভার্সেলের জন্য বেস্ট।
 
     return NextResponse.next();
 }
- 
+
 export const config = {
   // 🛠️ ম্যাচার কনফিগারেশন:
   matcher: [
     '/profile', 
     '/dashboard/:path*', 
-    
-    // 🔒 এই রেগুলার এক্সপ্রেশনটি কেবল আইডি ওয়ালা ইভেন্ট ডিটেইলস পেজগুলোকে প্রটেক্ট করবে।
-    // ফলে সাইন-আউট থাকা অবস্থায় কেউ ইভেন্ট ডিটেইলস দেখতে পারবে না, কিন্তু অন্য সাধারণ পেজগুলোতে সমস্যা হবে না।
-    '/events/:id([a-zA-Z0-9]+)', 
+    '/events/:id([a-zA-Z0-9]+)', // ইভেন্ট আইডি পেজগুলোকে লক রাখবে
   ],
 }
