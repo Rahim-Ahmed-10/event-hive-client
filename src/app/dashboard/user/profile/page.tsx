@@ -139,7 +139,7 @@ const handleUpdate = async (e: React.FormEvent) => {
               <h2 className="text-2xl font-extrabold text-white">{name || "User Name"}</h2>
               <div className="flex flex-wrap justify-center sm:justify-start gap-2">
                 <span className="px-3 py-0.5 bg-orange-500/10 text-orange-400 border border-orange-500/10 rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center gap-1">
-                  <Zap size={10} /> {(currentUser as any)?.plan || "free"}
+                  <Shield size={10} /> {(currentUser as any)?.role ? (currentUser as any).role : "user"}
                 </span>
                 <span className="px-3 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/10 rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center gap-1">
                   <Shield size={10} /> {currentUser?.role || "user"}
