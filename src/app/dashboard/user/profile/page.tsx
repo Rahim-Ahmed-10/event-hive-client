@@ -49,14 +49,13 @@ export default function ProfilePage() {
       </div>
     );
   }
-
-  const handleUpdate = async (e: React.FormEvent) => {
+const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setUpdating(true);
     setMessage(null);
 
     try {
-      // Better-Auth ক্লায়েন্ট দিয়ে আপডেট
+      // 🚀 এখান থেকে email সরিয়ে ফেলা হলো, শুধু name এবং image আপডেট হবে
       const { data, error } = await authClient.updateUser({
         name: name,
         image: imageUrl,
@@ -72,7 +71,7 @@ export default function ProfilePage() {
       setMessage({ type: "success", text: "Profile updated successfully! 🎉" });
       setIsEditing(false);
 
-      // 🚀 ম্যাজিক পার্ট: ৩ সেকেন্ড পর সাকসেস মেসেজটি অটোমেটিক হাওয়া হয়ে যাবে!
+      // ৩ সেকেন্ড পর সাকসেস মেসেজটি হাওয়া হয়ে যাবে
       setTimeout(() => {
         setMessage(null);
       }, 3000);
