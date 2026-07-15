@@ -142,7 +142,7 @@ const handleUpdate = async (e: React.FormEvent) => {
                   <Shield size={10} /> {(currentUser as any)?.role ? (currentUser as any).role : "user"}
                 </span>
                 <span className="px-3 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/10 rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center gap-1">
-                  <Shield size={10} /> {currentUser?.role || "user"}
+                  <Shield size={10} /> {user?.role || "user"}
                 </span>
               </div>
             </div>
