@@ -1,6 +1,5 @@
 import { stripe } from '@/lib/stripe';
 import { redirect } from 'next/navigation';
-import Link from 'next/link';
 import { CheckCircle2, Mail, ArrowRight, ShieldCheck } from 'lucide-react';
 import { subscription } from '@/lib/action/payment';
 
@@ -30,11 +29,10 @@ export default async function Success({ searchParams }: SuccessPageProps) {
   }
 
   if (status === 'complete') {
-    // 🎯 স্ট্রাইপ সেশনের মেটাডাটা থেকে ডাটা আলাদা করা হচ্ছে
     const userId = session.metadata?.userId;
     const priceId = session.line_items?.data[0]?.price?.id || '';
 
-    // 🚀 সঠিক নিয়মে অবজেক্ট আকারে ডাটা অ্যাকশন ফাংশনে পাঠানো হলো
+    
     if (userId) {
       await subscription({
         userId: userId,
@@ -97,13 +95,13 @@ export default async function Success({ searchParams }: SuccessPageProps) {
 
           {/* অ্যাকশন বাটন */}
           <div className="mt-8">
-            <Link
-              href="/dashboard"
+            <a
+              href="/dashboard/user"
               className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs uppercase tracking-widest py-4 rounded-xl shadow-lg shadow-orange-950/40 transition-all flex items-center justify-center gap-2 group"
             >
               Go to Dashboard
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
+            </a>
           </div>
 
         </div>
