@@ -22,6 +22,11 @@ export const auth = betterAuth({
     enabled: true,
   },
 
+ cookie: {
+    secure: process.env.NODE_ENV === "production", // শুধুমাত্র প্রোডাকশনে সিকিউর কুকি অন থাকবে
+    sameSite: "lax",
+  },
+
   user: {
     additionalFields: {
       role: { type: "string", required: false, defaultValue: "user" },
@@ -41,13 +46,6 @@ export const auth = betterAuth({
       plan: { type: "string" },
     },
   },
-
-  // 🛡️ ট্রাস্টেড অরিজিনস (রুট লেভেলে রাখা হয়েছে টাইপ এরর দূর করতে)
-  trustedOrigins: [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000", // অনেক সময় লোকালহোস্ট আইপি দিয়ে রান হয়
-    "https://event-hive-client-self.vercel.app"
-  ],
 
   // socialProviders: {
   //       google: { 
