@@ -6,20 +6,26 @@ import { headers } from 'next/headers';
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const session = await auth.api.getSession({
-    headers: await headers()
-  })
+  try {
+    // 🌐 Better-Auth সেশন চেক
+    const session = await auth.api.getSession({
+      headers: await headers()
+    });
 
-  if(session?.user?.role == "user" && session?.user?.plan === "free"){
-    return NextResponse.redirect(new URL('/pricing', request.url));
-  }
-  // 🍪 Better-Auth এর সেশন কুকি চেক করা হচ্ছে (নরমাল এবং সিকিউরড উভয়ই)
-  const sessionToken = 
-    request.cookies.get("better-auth.session_token")?.value ||
-    request.cookies.get("__Secure-better-auth.session_token")?.value;
+    // 🔑 ১. ইউজার যদি লগইন করা না থাকে, তাহলে সাইন-ইন পেজে রিডাইরেক্ট
+    if (!session) {
+      const signInUrl = new URL('/signin', request.url);
+      signInUrl.searchParams.set('callbackUrl', pathname);
+      return NextResponse.redirect(signInUrl);
+    }
 
-  // 🔑 ১. ইউজার যদি লগইন করা না থাকে, তাহলে সাইন-ইন পেজে রিডাইরেক্ট করুন
-  if (!sessionToken) {
+    // 💳 ২. ইউজার যদি ফ্রি প্ল্যানের হয়, তাকে প্রাইসিং পেজে পাঠাবে
+    if (session.user?.role === "user" && session.user?.plan === "free") {
+      return NextResponse.redirect(new URL('/pricing', request.url));
+    }
+
+  } catch (error) {
+    console.error("Middleware Auth Verification Error:", error);
     const signInUrl = new URL('/signin', request.url);
     signInUrl.searchParams.set('callbackUrl', pathname);
     return NextResponse.redirect(signInUrl);
@@ -28,12 +34,12 @@ export async function proxy(request: NextRequest) {
   return NextResponse.next();
 }
 
-// 🎯 কোন কোন রাউটে এই মিডলওয়্যারটি রান করবে
+// 🎯 কোন কোন পেজ বা রাউটে প্রোটেকশন কাজ করবে
 export const config = {
   matcher: [
     '/profile',
     '/dashboard/user',
     '/dashboard/:path*',
-    '/events/:id([a-zA-Z0-9]+)',
+    '/events/:id*',
   ],
 };
