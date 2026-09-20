@@ -1,141 +1,313 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight, Calendar, Sparkles, ShieldCheck, Ticket, Users } from "lucide-react";
+import { motion } from "framer-motion";
+import {
+  ArrowRight,
+  Calendar,
+  Sparkles,
+  ShieldCheck,
+  Ticket,
+  Users,
+  ChevronLeft,
+  ChevronRight,
+  MapPin,
+  Clock,
+  Tag,
+  Loader2,
+} from "lucide-react";
+
+// ইভেন্ট ডাটা টাইপ
+interface EventItem {
+  _id: string;
+  title: string;
+  category: string;
+  date: string;
+  time?: string;
+  location: string;
+  price: string | number;
+  image: string;
+}
 
 export default function HeroBanner() {
-  return (
-    <div className="min-h-[calc(100vh-73px)] bg-[#0f172a] text-gray-300 font-sans relative overflow-hidden flex flex-col justify-between">
-      
-      {/* Background Decorative Ambient Glows */}
-      <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full bg-orange-500/10 blur-[150px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-blue-500/5 blur-[120px] pointer-events-none" />
+  const [events, setEvents] = useState<EventItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
 
-      {/* Hero Core Content */}
-      <div className="max-w-7xl mx-auto px-6 w-full flex-1 flex flex-col lg:flex-row items-center gap-12 pt-12 pb-20 relative z-10">
+  // ব্যাকএন্ড API থেকে ডাইনামিক ডাটা ফেচ করা
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const res = await fetch("http://localhost:8085/events");
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          setEvents(data);
+        }
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
+  // অটো-স্লাইডার ইফেক্ট
+  useEffect(() => {
+    if (isHovered || events.length === 0) return;
+    const timer = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % events.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [isHovered, events.length]);
+
+  const handlePrev = () => {
+    if (events.length === 0) return;
+    setActiveIndex((prev) => (prev === 0 ? events.length - 1 : prev - 1));
+  };
+
+  const handleNext = () => {
+    if (events.length === 0) return;
+    setActiveIndex((prev) => (prev + 1) % events.length);
+  };
+
+  return (
+    <div className="min-h-[calc(100vh-73px)] bg-[#0a0f1d] text-slate-200 font-sans relative overflow-hidden flex flex-col justify-between selection:bg-orange-500 selection:text-white">
+      {/* Background Ambient Glow */}
+      <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] rounded-full bg-orange-500/15 blur-[160px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] rounded-full bg-blue-600/10 blur-[140px] pointer-events-none" />
+
+      {/* Main Body */}
+      <div className="max-w-7xl mx-auto px-6 w-full flex-1 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center py-12 relative z-10">
         
-        {/* Left Side: Text and CTAs */}
-        <div className="flex-1 text-center lg:text-left flex flex-col items-center lg:items-start">
-          
-          {/* Tagline Badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold border rounded-full bg-orange-500/10 border-orange-500/20 text-orange-500 mb-6 animate-pulse">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>DISCOVER UNFORGETTABLE EXPERIENCES</span>
+        {/* Left Column */}
+        <div className="lg:col-span-6 flex flex-col items-center lg:items-start text-center lg:text-left">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-semibold mb-6 backdrop-blur-md">
+            <Sparkles className="w-4 h-4 text-orange-400 animate-pulse" />
+            <span className="tracking-wider uppercase text-[11px]">
+              Discover Unforgettable Experiences
+            </span>
           </div>
 
-          {/* Main Headline */}
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-white leading-[1.1] mb-6">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white leading-[1.15] mb-6">
             Don't Just Exist. <br />
-            Experience with <span className="text-orange-500">EventHive</span>
+            Experience with{" "}
+            <span className="bg-gradient-to-r from-orange-400 via-amber-500 to-orange-600 bg-clip-text text-transparent">
+              EventHive
+            </span>
           </h1>
 
-          {/* Subtitle Description */}
-          <p className="text-base sm:text-lg text-gray-400 max-w-xl mb-10 leading-relaxed font-light">
-            Find and book tickets to the best concerts, tech conferences, sports tournaments, and local meetups. Your gateway to the most happening events around you.
+          <p className="text-base sm:text-lg text-slate-400 max-w-xl mb-8 leading-relaxed font-normal">
+            Find and book tickets to the best concerts, tech conferences,
+            sports tournaments, and local meetups. Your gateway to the most
+            happening events around you.
           </p>
 
-          {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-            <Link 
-              href="/events" 
-              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 text-sm font-bold text-white bg-orange-600 hover:bg-orange-500 rounded-full transition-all duration-300 shadow-lg shadow-orange-900/40 active:scale-[0.98]"
+            <Link
+              href="/events"
+              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 text-sm font-bold text-white bg-orange-600 hover:bg-orange-500 rounded-xl transition-all duration-300 shadow-lg shadow-orange-600/30 active:scale-[0.98]"
             >
               <span>Explore Events</span>
               <ArrowRight className="w-4 h-4 stroke-[2.5]" />
             </Link>
-            
-            <Link 
-              href="/create-event" 
-              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 text-sm font-semibold text-white bg-white/5 hover:bg-white/10 rounded-full border border-white/10 transition-all duration-300 active:scale-[0.98]"
+
+            <Link
+              href="/create-event"
+              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 text-sm font-semibold text-slate-200 bg-slate-900/80 hover:bg-slate-800 hover:text-white rounded-xl border border-slate-800 transition-all duration-300 active:scale-[0.98] backdrop-blur-md"
             >
-              <Calendar className="w-4 h-4 text-orange-500" />
+              <Calendar className="w-4 h-4 text-orange-400" />
               <span>Host an Event</span>
             </Link>
           </div>
         </div>
 
-        {/* Right Side: Event Ticket / Pass Visual Box */}
-        <div className="flex-1 w-full max-w-md lg:max-w-none flex justify-center items-center relative">
-          
-          {/* Main Ticket Card Graphic */}
-          <div className="relative w-full aspect-[4/3] max-w-[440px] rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 p-6 flex flex-col justify-between overflow-hidden shadow-2xl backdrop-blur-3xl group">
-            
-            {/* Grid Overlay inside the graphic box */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:2rem_2rem]" />
-
-            {/* Top Row Label */}
-            <div className="relative z-10 flex justify-between items-center">
-              <span className="text-[10px] uppercase font-black tracking-widest bg-orange-600 text-white px-2 py-0.5 rounded">VIP Pass</span>
-              <span className="text-xs text-gray-500 font-mono">#EH-2026</span>
-            </div>
-
-            {/* Centered Large Concept Typography */}
-            <div className="relative z-10 text-center select-none py-4">
-              <span className="block text-6xl font-black text-white/5 tracking-tighter uppercase group-hover:text-white/10 transition-colors duration-500">
-                LIVE SHOW
-              </span>
-              <span className="block text-xl font-bold text-orange-500 tracking-widest uppercase mt-[-10px]">
-                GRAND OPENING
-              </span>
-            </div>
-
-            {/* Bottom Floating Event Details Tag */}
-            <div className="relative z-10 bg-[#0f172a]/90 border border-white/5 rounded-2xl p-4 backdrop-blur-md flex items-center justify-between">
-              <div>
-                <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wider">Date & Time</p>
-                <p className="text-xs font-bold text-white">July 25, 2026 • 08:00 PM</p>
+        {/* Right Column: Dynamic 3D Carousel */}
+        <div
+          className="lg:col-span-6 w-full flex flex-col items-center justify-center relative select-none"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
+          <div className="relative w-full h-[380px] flex items-center justify-center [perspective:1200px]">
+            {loading ? (
+              <div className="flex flex-col items-center gap-3 text-orange-400">
+                <Loader2 className="w-8 h-8 animate-spin" />
+                <p className="text-sm font-medium text-slate-400">Loading Events...</p>
               </div>
-              <div className="text-right">
-                <p className="text-[10px] text-gray-500 uppercase tracking-wider">Location</p>
-                <p className="text-xs font-bold text-orange-500">Dhaka, BD</p>
-              </div>
-            </div>
+            ) : events.length === 0 ? (
+              <div className="text-slate-400 text-sm">No events found in database.</div>
+            ) : (
+              events.map((event, index) => {
+                const offset = (index - activeIndex + events.length) % events.length;
+                let adjustedOffset = offset;
+                if (offset > events.length / 2) {
+                  adjustedOffset = offset - events.length;
+                }
 
-            {/* Abstract Decorative Ticket Notch Designs (Left & Right Cutouts) */}
-            <div className="absolute left-[-12px] top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#0f172a] border-r border-white/10" />
-            <div className="absolute right-[-12px] top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#0f172a] border-l border-white/10" />
+                const isActive = adjustedOffset === 0;
+
+                return (
+                  <motion.div
+                    key={event._id}
+                    onClick={() => setActiveIndex(index)}
+                    initial={false}
+                    animate={{
+                      x: adjustedOffset * 110,
+                      scale: isActive ? 1 : 1 - Math.abs(adjustedOffset) * 0.18,
+                      rotateY: adjustedOffset * -25,
+                      zIndex: 20 - Math.abs(adjustedOffset),
+                      opacity: Math.abs(adjustedOffset) > 1 ? 0 : isActive ? 1 : 0.45,
+                    }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 260,
+                      damping: 25,
+                    }}
+                    className={`absolute w-[280px] h-[350px] rounded-3xl overflow-hidden cursor-pointer border bg-slate-900/90 shadow-2xl backdrop-blur-xl flex flex-col justify-between group ${
+                      isActive
+                        ? "border-orange-500/60 ring-4 ring-orange-500/20 shadow-orange-500/10"
+                        : "border-slate-800 hover:border-slate-700"
+                    }`}
+                    style={{ transformStyle: "preserve-3d" }}
+                  >
+                    {/* Event Image Header */}
+                    <div className="relative w-full h-[58%] overflow-hidden bg-slate-950">
+                      <img
+                        src={event.image || "https://via.placeholder.com/600x400?text=Event"}
+                        alt={event.title}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-black/30" />
+
+                      <div className="absolute top-3 left-3">
+                        <span className="bg-orange-600/90 backdrop-blur-md text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-lg tracking-wider shadow-md">
+                          {event.category || "General"}
+                        </span>
+                      </div>
+
+                      <div className="absolute top-3 right-3 bg-slate-900/90 backdrop-blur-md border border-slate-700 text-orange-400 text-xs font-bold px-2.5 py-1 rounded-lg shadow-md flex items-center gap-1">
+                        <Tag className="w-3 h-3" />
+                        {typeof event.price === "number" ? `$${event.price}` : event.price || "Free"}
+                      </div>
+                    </div>
+
+                    {/* Event Body */}
+                    <div className="p-4 flex-1 flex flex-col justify-between bg-slate-900/95">
+                      <div>
+                        <h3 className="text-base font-bold text-white line-clamp-1 group-hover:text-orange-400 transition-colors">
+                          {event.title}
+                        </h3>
+                        <div className="flex items-center gap-1.5 text-xs text-slate-400 mt-1.5">
+                          <Clock className="w-3.5 h-3.5 text-orange-400" />
+                          <span>
+                            {event.date} {event.time ? `• ${event.time}` : ""}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between text-xs font-semibold border-t border-slate-800/80 pt-3 mt-2">
+                        <span className="text-slate-400 flex items-center gap-1 line-clamp-1">
+                          <MapPin className="w-3.5 h-3.5 text-orange-400 shrink-0" />
+                          {event.location}
+                        </span>
+                        <Link
+                          href={`/events/${event._id}`}
+                          className="text-orange-400 hover:text-orange-300 flex items-center gap-1 transition-all shrink-0"
+                        >
+                          Book <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })
+            )}
           </div>
 
+          {/* Slider Controls */}
+          {!loading && events.length > 0 && (
+            <div className="flex items-center gap-6 mt-2 z-30">
+              <button
+                onClick={handlePrev}
+                className="p-2 rounded-xl bg-slate-900/80 border border-slate-800 hover:bg-orange-600 hover:border-orange-600 text-slate-300 hover:text-white transition-all active:scale-95 shadow-md"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              <div className="flex items-center gap-2">
+                {events.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setActiveIndex(idx)}
+                    className={`h-2 rounded-full transition-all duration-300 ${
+                      activeIndex === idx
+                        ? "w-6 bg-orange-500"
+                        : "w-2 bg-slate-800 hover:bg-slate-700"
+                    }`}
+                  />
+                ))}
+              </div>
+
+              <button
+                onClick={handleNext}
+                className="p-2 rounded-xl bg-slate-900/80 border border-slate-800 hover:bg-orange-600 hover:border-orange-600 text-slate-300 hover:text-white transition-all active:scale-95 shadow-md"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
+
       </div>
 
-      {/* Bottom Features Banner Info Row */}
-      <div className="border-t border-white/5 bg-[#0b1120] py-6 relative z-10">
+      {/* Feature Footer */}
+      <div className="border-t border-slate-800/80 bg-slate-950/90 backdrop-blur-md py-6 relative z-10">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-3 gap-6 text-center sm:text-left">
-          
-          <div className="flex flex-col sm:flex-row items-center gap-3 justify-center sm:justify-start">
-            <div className="p-2.5 rounded-xl bg-orange-500/10 text-orange-500">
+          <div className="flex flex-col sm:flex-row items-center gap-3.5 justify-center sm:justify-start">
+            <div className="p-3 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-orange-400">
               <Ticket className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-white uppercase tracking-wide">Instant Ticketing</h4>
-              <p className="text-xs text-gray-400">Get your QR pass immediately via email</p>
+              <h4 className="text-sm font-bold text-white uppercase tracking-wide">
+                Instant Ticketing
+              </h4>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Get your QR pass immediately via email
+              </p>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center gap-3 justify-center sm:justify-start border-y sm:border-y-0 sm:border-x border-white/5 py-4 sm:py-0 sm:px-6">
-            <div className="p-2.5 rounded-xl bg-orange-500/10 text-orange-500">
+          <div className="flex flex-col sm:flex-row items-center gap-3.5 justify-center sm:justify-start border-y sm:border-y-0 sm:border-x border-slate-800/80 py-4 sm:py-0 sm:px-6">
+            <div className="p-3 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-orange-400">
               <Users className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-white uppercase tracking-wide">Verified Hosts</h4>
-              <p className="text-xs text-gray-400">100% authentic and trusted event organizers</p>
+              <h4 className="text-sm font-bold text-white uppercase tracking-wide">
+                Verified Hosts
+              </h4>
+              <p className="text-xs text-slate-400 mt-0.5">
+                100% authentic and trusted event organizers
+              </p>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center gap-3 justify-center sm:justify-start">
-            <div className="p-2.5 rounded-xl bg-orange-500/10 text-orange-500">
+          <div className="flex flex-col sm:flex-row items-center gap-3.5 justify-center sm:justify-start">
+            <div className="p-3 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-orange-400">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-white uppercase tracking-wide">Secure Payments</h4>
-              <p className="text-xs text-gray-400">Fully encrypted safe checkout gateway</p>
+              <h4 className="text-sm font-bold text-white uppercase tracking-wide">
+                Secure Payments
+              </h4>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Fully encrypted safe checkout gateway
+              </p>
             </div>
           </div>
-
         </div>
       </div>
-
     </div>
   );
 }
