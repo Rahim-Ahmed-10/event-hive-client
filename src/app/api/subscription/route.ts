@@ -5,17 +5,20 @@ import { auth } from '@/lib/auth';
 
 export async function POST(req: Request) {
   try {
-    const headersList = await headers();
-    const origin = headersList.get('origin') || 'http://localhost:3000';
+    const reqHeaders = await headers();
+    
+    // Njia bora ya kuchukua origin mbadala
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.BETTER_AUTH_URL || 'http://localhost:3000';
+    const origin = reqHeaders.get('origin') || appUrl;
 
-    // ১. Better-Auth থেকে ইউজারের বর্তমান সেশন চেক
+    // 1. Angalia kikao cha mtumiaji (Session) kutoka Better-Auth
     const userSession = await auth.api.getSession({
-      headers: await headers()
+      headers: reqHeaders, // Tumia kigezo tulichokiweka hapo juu
     });
 
     const user = userSession?.user;
 
-    // 🔒 ইউজার লগইন না থাকলে JSON এরর পাঠাবে (যাতে ক্লায়েন্ট সাইড /signin এ পাঠাতে পারে)
+    // 🔒 Ikiwa mtumiaji hajajisajili, rudisha kosa la JSON
     if (!user || !user.id) {
       return NextResponse.json(
         { error: "Unauthorized", redirectUrl: `${origin}/signin` },
@@ -23,10 +26,10 @@ export async function POST(req: Request) {
       );
     }
 
-    // স্ট্রাইপ প্রাইস আইডি
+    // Vitambulisho vya Bei vya Stripe (Stripe Price ID)
     const PRICE_ID = "price_1TtAFgErmWxQp6eFVoWhkw9X";
 
-    // ২. স্ট্রাইপ চেকআউট সেশন তৈরি
+    // 2. Tengeza kikao cha Stripe Checkout
     const session = await stripe.checkout.sessions.create({
       customer_email: user.email,
       line_items: [
@@ -44,14 +47,14 @@ export async function POST(req: Request) {
       cancel_url: `${origin}/#pricing`,
     });
 
-    // ৩. রিডাইরেক্ট করার বদলে JSON এ URL পাঠানো হচ্ছে
+    // 3. Rudisha URL ya Stripe kuwezesha kuelekezwa (redirect) kutoka upande wa mteja (Client side)
     return NextResponse.json({ url: session.url });
 
   } catch (err: any) {
     console.error("Stripe Subscription Error: ", err);
     return NextResponse.json(
-      { error: err.message || "Internal Server Error" },
-      { status: err.statusCode || 500 }
+      { error: err?.message || "Internal Server Error" },
+      { status: err?.statusCode || 500 }
     );
   }
 }
