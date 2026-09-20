@@ -3,50 +3,49 @@ import { headers } from 'next/headers';
 import { stripe } from '@/lib/stripe';
 import { auth } from '@/lib/auth';
 
-export async function POST() {
+export async function POST(req: Request) {
   try {
     const headersList = await headers();
     const origin = headersList.get('origin') || 'http://localhost:3000';
 
-    // ১. Better-Auth থেকে ইউজারের বর্তমান সেশন চেক করা হচ্ছে
+    // ১. Better-Auth থেকে ইউজারের বর্তমান সেশন চেক
     const userSession = await auth.api.getSession({
       headers: await headers()
     });
 
     const user = userSession?.user;
 
-    // 🔒 নিরাপত্তা চেক: ইউজার যদি লগইন না থাকে, তবে ক্র্যাশ না করে সাইন-ইন পেজে রিডাইরেক্ট করবে
+    // 🔒 ইউজার লগইন না থাকলে JSON এরর পাঠাবে (যাতে ক্লায়েন্ট সাইড /signin এ পাঠাতে পারে)
     if (!user || !user.id) {
-      return NextResponse.redirect(`${origin}/signin`, 307);
+      return NextResponse.json(
+        { error: "Unauthorized", redirectUrl: `${origin}/signin` },
+        { status: 401 }
+      );
     }
 
-    // আপনার স্ট্রাইপ প্রাইস আইডি (Stripe Product Price ID)
+    // স্ট্রাইপ প্রাইস আইডি
     const PRICE_ID = "price_1TtAFgErmWxQp6eFVoWhkw9X";
 
-    // ২. স্ট্রাইপ চেকআউট সেশন তৈরি (সঠিক প্যারামিটার সহ)
+    // ২. স্ট্রাইপ চেকআউট সেশন তৈরি
     const session = await stripe.checkout.sessions.create({
-      // ✅ customer_email ব্যবহার করা হয়েছে (userEmail এর পরিবর্তে)
-      customer_email: user.email, 
+      customer_email: user.email,
       line_items: [
         {
           price: PRICE_ID,
           quantity: 1,
         },
       ],
-      // মেটাডাটায় আপনার কাস্টম ডাটা সেভ রাখা হচ্ছে যা পরবর্তীতে Webhook-এ লাগবে
       metadata: {
         userId: user.id,
         userEmail: user.email || '',
       },
       mode: 'subscription',
-      // পেমেন্ট সফল হলে এই ইউআরএল-এ যাবে
       success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
-      // পেমেন্ট ক্যানসেল করলে বা ব্যাক করলে আবার প্রাইসিং সেকশনে ফিরিয়ে আনবে
-      cancel_url: `${origin}/#pricing`, 
+      cancel_url: `${origin}/#pricing`,
     });
 
-    // ৩. স্ট্রাইপের পেমেন্ট পেজে রিডাইরেক্ট করা হচ্ছে (Status 303 Form Submission এর জন্য পারফেক্ট)
-    return NextResponse.redirect(session.url!, 303);
+    // ৩. রিডাইরেক্ট করার বদলে JSON এ URL পাঠানো হচ্ছে
+    return NextResponse.json({ url: session.url });
 
   } catch (err: any) {
     console.error("Stripe Subscription Error: ", err);
