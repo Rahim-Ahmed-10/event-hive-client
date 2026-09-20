@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation"; // 👈 useRouter Import করা হয়েছে
+import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { User, Mail, Shield, Save, Loader2, CheckCircle2 } from "lucide-react";
 
@@ -15,7 +15,7 @@ interface UserProfile {
 }
 
 export default function ProfilePage() {
-  const router = useRouter(); // 👈 Router Declare করা হয়েছে
+  const router = useRouter();
   const { data: session, isPending: authLoading } = authClient.useSession();
   const currentUser = session?.user;
 
@@ -69,7 +69,6 @@ export default function ProfilePage() {
     setMessage(null);
 
     try {
-      // এক্সপ্রেস ডাটাবেজে নাম আপডেট
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8085"}/api/users/profile/update`,
         {
@@ -87,18 +86,15 @@ export default function ProfilePage() {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        // Better-Auth সেশন আপডেট
         await authClient.updateUser({
           name: name,
         });
 
-        // নেভবারকে সাথে সাথে নতুন নাম জানানোর ইভেন্ট ট্রিগার
         window.dispatchEvent(new CustomEvent("user-profile-updated", { detail: { name } }));
 
         setMessage({ type: "success", text: "Profile updated successfully!" });
         setProfile((prev) => (prev ? { ...prev, name } : null));
 
-        // Router Refresh
         router.refresh();
       } else {
         throw new Error(data.message || "Failed to update profile");
@@ -118,18 +114,18 @@ export default function ProfilePage() {
     );
   }
 
+  const userImage = profile?.image || currentUser?.image;
+
   return (
     <div className="min-h-screen bg-[#0b1120] text-slate-200 py-12 px-6 font-sans">
       <div className="max-w-5xl mx-auto space-y-8">
         
-        {/* Subtitle */}
         <div>
           <p className="text-slate-400 text-sm font-normal">
             Manage your personal profile information and settings.
           </p>
         </div>
 
-        {/* Success / Error Message Alert */}
         {message && (
           <div
             className={`p-4 rounded-xl text-xs font-semibold flex items-center gap-2 ${
@@ -143,19 +139,17 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {/* Main Content Layout */}
         <div className="grid md:grid-cols-12 gap-8 items-start">
           
-          {/* Left Side: Profile Card */}
+          {/* Avatar & Info Card */}
           <div className="md:col-span-5 bg-[#1e293b]/70 border border-slate-700/60 rounded-3xl p-8 flex flex-col items-center text-center space-y-6 shadow-xl">
             
-            {/* User Avatar */}
             <div className="relative">
               <div className="w-28 h-28 rounded-full p-1 bg-gradient-to-tr from-orange-500 to-amber-500 flex items-center justify-center">
                 <div className="w-full h-full rounded-full overflow-hidden bg-[#0f172a] flex items-center justify-center">
-                  {profile?.image || currentUser?.image ? (
+                  {userImage ? (
                     <img
-                      src={profile?.image || currentUser?.image}
+                      src={userImage as string}
                       alt={profile?.name || "User Avatar"}
                       className="w-full h-full object-cover"
                     />
@@ -168,7 +162,6 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Name & Email */}
             <div className="space-y-1">
               <h2 className="text-xl font-bold text-white tracking-wide">
                 {profile?.name || currentUser?.name}
@@ -180,7 +173,6 @@ export default function ProfilePage() {
 
             <hr className="w-full border-slate-700/50" />
 
-            {/* Plan Badge */}
             <div className="w-full flex items-center justify-between text-xs font-medium px-2">
               <div className="flex items-center gap-2 text-slate-400">
                 <Shield size={16} />
@@ -192,7 +184,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Right Side: Edit Form */}
+          {/* Edit Form */}
           <div className="md:col-span-7 bg-[#1e293b]/70 border border-slate-700/60 rounded-3xl p-8 shadow-xl space-y-6">
             <h3 className="text-lg font-bold text-white tracking-tight">
               Edit Profile Details
@@ -200,7 +192,6 @@ export default function ProfilePage() {
 
             <form onSubmit={handleUpdateProfile} className="space-y-5">
               
-              {/* Full Name Field */}
               <div className="space-y-2">
                 <label className="block text-xs font-semibold text-slate-400">
                   Full Name
@@ -218,7 +209,6 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              {/* Email Field (Disabled) */}
               <div className="space-y-2">
                 <label className="block text-xs font-semibold text-slate-400">
                   Email Address (Cannot be changed)
@@ -234,7 +224,6 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              {/* Save Button */}
               <div className="pt-2">
                 <button
                   type="submit"
